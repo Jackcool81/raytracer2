@@ -32,7 +32,7 @@ public:
 
 
 private:
-   
+    int test = 0;
 };
 
 
