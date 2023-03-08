@@ -175,7 +175,7 @@ void readfile(const char* filename, Scene& newScene)
                         Sphere s = Sphere(vec3(values[0], values[1], values[2]), values[4]);
                         s.trans = transfstack.top();
                         
-                        newScene.objectz.push_back(s);
+                        newScene.objectz.push_back(&s);
                     
 
                     }

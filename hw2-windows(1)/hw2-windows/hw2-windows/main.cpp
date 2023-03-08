@@ -72,9 +72,10 @@ float Intersection(float min_t, Scene min_primitive) {
     return 0;
 }
 */
-bool FindIntersection(ray r, vector<Scene> a, Scene newScene, Sphere sa) {
+bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
+    /*
     float t = sa.intersection(r);
     if (t == 0) {
         return false;
@@ -82,10 +83,11 @@ bool FindIntersection(ray r, vector<Scene> a, Scene newScene, Sphere sa) {
     else {
         return true;
     }
-    /*
+    */
+    
     for (int i = 0; i < a.size(); i++) {
         //float t = 0;
-        float t = a[i].intersection(r);
+        float t = (*a[i]).intersection(r);
         if (t == 0) {
             return false;
         }
@@ -94,11 +96,11 @@ bool FindIntersection(ray r, vector<Scene> a, Scene newScene, Sphere sa) {
         }
 
         if (t > 0 && t < min_t) {
-            min_primitive = a[i];
+            min_primitive = *a[i];
             min_t = t;
         }
     }
-    */
+    
     return false;
     //loop through all primitives in the scene (passed in parameter)
         //t = the intersection for each primitive (shape) (smallest positive root)

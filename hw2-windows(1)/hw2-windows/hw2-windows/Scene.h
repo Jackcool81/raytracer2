@@ -16,8 +16,10 @@ class Scene {
 public:
     Scene() {}
 
-    float intersection(ray r) { return 0; }
-    vector<Scene> objectz;
+    float intersection(ray r) {
+        return 0;
+    };
+    vector<Scene*> objectz;
     
 
 private:
