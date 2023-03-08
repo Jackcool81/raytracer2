@@ -39,16 +39,18 @@ EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user
 EXTERN GLuint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices
 EXTERN GLuint projectionPos, modelviewPos; // Uniform locations of the above matrices
-static enum {view, translate, scale} transop ; // which operation to transform 
-enum shape {cube, sphere, teapot} ;
+//static enum {view, translate, scale} transop ; // which operation to transform 
+//enum shape {cube, sphere, teapot} ;
 EXTERN float sx, sy ; // the scale in x and y 
 EXTERN float tx, ty ; // the translation in x and y
 
 // Lighting parameter array, similar to that in the fragment shader
-const int numLights = 10 ; 
+//const int numLights = 10 ;
+/*
 EXTERN GLfloat lightposn [4*numLights] ; // Light Positions
 EXTERN GLfloat lightcolor[4*numLights] ; // Light Colors
 EXTERN GLfloat lightransf[4*numLights] ; // Lights transformed by modelview
+*/
 EXTERN int numused ;                     // How many lights are used 
 
 // Materials (read from file) 
@@ -60,8 +62,9 @@ EXTERN GLfloat emission[4] ;
 EXTERN GLfloat shininess ; 
 
 // For multiple objects, read from a file.  
-const int maxobjects = 10 ; 
+//const int maxobjects = 10 ; 
 EXTERN int numobjects ; 
+/*
 EXTERN struct object {
   shape type ; 
   GLfloat size ;
@@ -72,7 +75,7 @@ EXTERN struct object {
   GLfloat shininess ;
   mat4 transform ; 
 } objects[maxobjects] ;
-
+*/
 // Variables to set uniform params for lighting fragment shader 
 EXTERN GLuint lightcol ; 
 EXTERN GLuint lightpos ; 

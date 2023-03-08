@@ -26,9 +26,8 @@ public:
         return orig + vec3(t * dir[0], t * dir[1], t * dir[2]);
     }
     */
-    const int maxobjects = 10;
-    int numobjects;
-    vector<Scene> objects;
+
+    vector<Scene> objectz;
 
 
 private:

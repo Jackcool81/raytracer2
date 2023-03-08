@@ -95,7 +95,7 @@ void readfile(const char* filename)
                 // Process the light, add it to database.
                 // Lighting Command
                 if (cmd == "light") {
-                    if (numused == numLights) { // No more Lights 
+                    if (numused == 5) { // No more Lights 
                         cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
                     } else {
                         validinput = readvals(s, 8, values); // Position/color for lts.
@@ -171,37 +171,39 @@ void readfile(const char* filename)
                 // you can get a sense of how this works.  
                 // Also look at demo.txt to get a sense of why things are done this way.
                 else if (cmd == "sphere" || cmd == "cube" || cmd == "teapot") {
-                    if (numobjects == maxobjects) { // No more objects 
+                    if (numobjects == 5) { // No more objects 
                         cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
                     } else {
                         validinput = readvals(s, 1, values); 
                         if (validinput) {
-                            object * obj = &(objects[numobjects]); 
+                           // object * obj = &(objects[numobjects]); 
                             
                             
 
-                            obj->size = values[0]; 
+                            //obj->size = values[0]; 
 
                             // Set the object's light properties
                             for (i = 0; i < 4; i++) {
+                                /*
                                 (obj->ambient)[i] = ambient[i]; 
                                 (obj->diffuse)[i] = diffuse[i]; 
                                 (obj->specular)[i] = specular[i]; 
                                 (obj->emission)[i] = emission[i];
+                                */
                             }
-                            obj->shininess = shininess; 
+                            //obj->shininess = shininess; 
 
                             // Set the object's transform
-                            obj->transform = transfstack.top(); 
+                            //obj->transform = transfstack.top(); 
 
                             // Set the object's type
                             if (cmd == "sphere") {
-                                obj->type = sphere; 
-                                newScene->objects.push_back(Sphere());
+                                //obj->type = sphere; 
+                                newScene->objectz.push_back(Sphere());
                             } else if (cmd == "cube") {
-                                obj->type = cube; 
+                                //obj->type = cube; 
                             } else if (cmd == "teapot") {
-                                obj->type = teapot; 
+                                //obj->type = teapot; 
                             }
                         }
                         ++numobjects; 
