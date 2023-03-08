@@ -148,9 +148,12 @@ int main(int argc, char* argv[]) {
     float fovx = newFovy * (image_width/image_height);
     // Render
     vec3 w = eyeinit - center;
+    w = (eyeinit - center) / sqrt((w.x * w.x) + (w.y * w.y) + (w.z * w.z));
 
 
     vec3 u = cross(upinit, w);
+
+    u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
 
     vec3 v = cross(w, u);
 
@@ -173,7 +176,8 @@ int main(int argc, char* argv[]) {
             float alpha = fovx * ((j - (image_width / 2)) / (image_width / 2));
             float beta = newFovy * (((image_height / 2) - i) / (image_height / 2));
             vec3 direction = (alpha * u) + (beta * v) - w;
-            direction = glm::normalize(direction);
+            direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
+            //direction = glm::normalize(direction);
             ray r(origin, direction);
             bool rayhit = FindIntersection(r, newScene.objectz, newScene, s);
             //check intersection with the ray and the scene

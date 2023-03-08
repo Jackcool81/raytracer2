@@ -44,7 +44,6 @@ public:
         float b = dot(vec3(r.dir.x * 2, r.dir.y * 2, r.dir.z * 2), (r.orig - newxyz));
 
         float c = dot((r.orig - newxyz), (r.orig - newxyz)) - (rad * rad);
-
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
