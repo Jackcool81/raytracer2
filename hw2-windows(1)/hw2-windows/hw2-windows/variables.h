@@ -35,6 +35,7 @@ EXTERN float fovy ;
 
 #endif 
 
+
 EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user 
 EXTERN GLuint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices

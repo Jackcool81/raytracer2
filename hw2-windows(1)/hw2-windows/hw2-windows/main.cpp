@@ -19,6 +19,9 @@
 #include "UCSD/grader.h"
 #include "Geometry.h"
 #include "ray.h"
+#include "Scene.h"
+
+
 
 using namespace std ; 
 
@@ -26,6 +29,7 @@ using namespace std ;
 #define MAINPROGRAM 
 #include "variables.h" 
 #include "readfile.h" // prototypes for readfile.cpp  
+
 void display(void) ;  // prototype for display function.  
 
 Grader grader;
@@ -62,15 +66,47 @@ vec3 ray_color(const ray& r) {
 }
 */
 
-void FindIntersection(ray r) {
-    //min_t = number of bounces from read file
-    //min_primitive = NUll
+/*
+float Intersection(float min_t, Scene min_primitive) {
+
+    return 0;
+}
+*/
+bool FindIntersection(ray r, vector<Scene> a, Scene newScene, Sphere sa) {
+    float min_t = 1000000; // number of bounces from read file
+    Scene min_primitive;
+    float t = sa.intersection(r);
+    if (t == 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
+    /*
+    for (int i = 0; i < a.size(); i++) {
+        //float t = 0;
+        float t = a[i].intersection(r);
+        if (t == 0) {
+            return false;
+        }
+        else {
+            return true;
+        }
+
+        if (t > 0 && t < min_t) {
+            min_primitive = a[i];
+            min_t = t;
+        }
+    }
+    */
+    return false;
     //loop through all primitives in the scene (passed in parameter)
         //t = the intersection for each primitive (shape) (smallest positive root)
           //t > 0 && t < min_t:
              //min_primitive = current primitive (the primitive we want to return the one with the smallest root) 
              //min_t = t
-    //return intersection(min_t, min_primitive)
+    //return r.at(min_t);
+    //return min_t;
 }
 
 
@@ -86,8 +122,11 @@ void write_color(int index, BYTE pixels[], int pixel_color[]) {
 }
 
 int main(int argc, char* argv[]) {
+    
+    Scene newScene = Scene();
     FreeImage_Initialise();
-    readfile(argv[1]);
+    readfile(argv[1], newScene);
+    
     // Image
     const auto aspect_ratio = 1;
     const int image_width = w;
@@ -99,7 +138,7 @@ int main(int argc, char* argv[]) {
     auto viewport_width = aspect_ratio * viewport_height;
     auto focal_length = 1.0;
    
-    auto origin = glm::normalize(eyeinit);
+    auto origin = eyeinit;
     auto horizontal = vec3(viewport_width, 0, 0);
     
     auto vertical = vec3(0, viewport_height, 0);
@@ -108,14 +147,18 @@ int main(int argc, char* argv[]) {
      
     float fovx = newFovy * (image_width/image_height);
     // Render
-    vec3 w = glm::normalize(eyeinit) - glm::normalize(center);
+    vec3 w = eyeinit - center;
 
 
-    vec3 u = cross(glm::normalize(upinit), w);
+    vec3 u = cross(upinit, w);
 
     vec3 v = cross(w, u);
 
     //do we have to normalize as we did in lookat
+
+    modelview = lookAt(eyeinit, center, upinit);
+
+    Sphere s = Sphere(vec3(1, 0, 0), 0.15);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
@@ -132,11 +175,17 @@ int main(int argc, char* argv[]) {
             vec3 direction = (alpha * u) + (beta * v) - w;
             direction = glm::normalize(direction);
             ray r(origin, direction);
-
+            bool rayhit = FindIntersection(r, newScene.objectz, newScene, s);
             //check intersection with the ray and the scene
+            int* pixel_color;
+            if (rayhit) {
+                pixel_color = new int[3] {0, 255, 255};
+            }
+            else {
+                pixel_color = new int[3] {0, 0, 0};
+            }
 
-
-            int* pixel_color = new int[3] {0, 255, 255};
+            
             //depending on the intersection compute the color 
             write_color(index, pixels, pixel_color);
             index+=3;

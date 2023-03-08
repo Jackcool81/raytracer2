@@ -36,6 +36,7 @@ using namespace std;
 #include "variables.h" 
 #include "readfile.h"
 
+
 // You may not need to use the following two functions, but it is provided
 // here for convenience
 
@@ -68,7 +69,7 @@ bool readvals(stringstream &s, const int numvals, GLfloat* values)
     return true; 
 }
 
-void readfile(const char* filename) 
+void readfile(const char* filename, Scene& newScene) 
 {
     string str, cmd; 
     ifstream in;
@@ -79,7 +80,7 @@ void readfile(const char* filename)
         // This is done using standard STL Templates 
         stack <mat4> transfstack; 
         transfstack.push(mat4(1.0));  // identity
-        Scene* newScene = new Scene();
+        
         getline (in, str); 
         while (in) {
             if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
@@ -167,10 +168,24 @@ void readfile(const char* filename)
                     }
                 }
 
+                else if (cmd == "sphere") {
+                    validinput = readvals(s, 4, values); // 10 values eye cen up fov
+                    if (validinput) {
+                        //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
+                        Sphere s = Sphere(vec3(values[0], values[1], values[2]), values[4]);
+                        s.trans = transfstack.top();
+                        
+                        newScene.objectz.push_back(s);
+                    
+
+                    }
+                    
+                }
+
                 // I've left the code for loading objects in the skeleton, so 
                 // you can get a sense of how this works.  
                 // Also look at demo.txt to get a sense of why things are done this way.
-                else if (cmd == "sphere" || cmd == "cube" || cmd == "teapot") {
+                else if (cmd == "tri" || cmd == "teapot") {
                     if (numobjects == 5) { // No more objects 
                         cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
                     } else {
@@ -197,10 +212,7 @@ void readfile(const char* filename)
                             //obj->transform = transfstack.top(); 
 
                             // Set the object's type
-                            if (cmd == "sphere") {
-                                //obj->type = sphere; 
-                                newScene->objectz.push_back(Sphere());
-                            } else if (cmd == "cube") {
+                            if (cmd == "cube") {
                                 //obj->type = cube; 
                             } else if (cmd == "teapot") {
                                 //obj->type = teapot; 
