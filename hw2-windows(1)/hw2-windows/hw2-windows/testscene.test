@@ -2,7 +2,7 @@
 # Intended to show transforms
 # I know it's not the most exciting of scenes...
 
-size 100 100 
+size 640 480 
 output testpicture.png
 camera -2 -2 2 0 0 0 1 1 2 60
 

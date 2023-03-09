@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
    // auto lower_left_corner = origin - divide(horizontal, 2) - divide(vertical,2) - vec3(0, 0, focal_length);
     
     //fov 
-    float newFovy = tan(fovy / 2);
+    float newFovy = tan((fovy * (180.0 / 3.14)) / 2);
      //with the aspect ratio
     float fovx = newFovy * (float(image_width) / float(image_height));
     // Render
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 
     modelview = lookAt(eyeinit, center, upinit);
 
-    Sphere s = Sphere(vec3(0, 0, 0), 1);
+    Sphere s = Sphere(vec3(.5, -1, .5), 0.15);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
