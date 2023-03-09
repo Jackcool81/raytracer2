@@ -173,11 +173,8 @@ void readfile(const char* filename, Scene& newScene)
                     if (validinput) {
                         //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
                         Sphere s = Sphere(vec3(values[0], values[1], values[2]), values[4]);
-                        s.trans = transfstack.top();
-                        
+                        s.trans = transfstack.top();              
                         newScene.objectz.push_back(&s);
-                    
-
                     }
                     
                 }

@@ -31,19 +31,19 @@ private:
 class Sphere : public Scene {
 public:
     Sphere() {}
-    Sphere(const vec3& center, const int& radius)
+    Sphere(const vec3& center, const float& radius)
         : xyz(center), rad(radius)
     {}
     //do we need to multiple our orignal center by the modelview then the transform matrix? 
 
     vec3 center() const { return xyz; }
-    int radius() const { return rad; }
+    float radius() const { return rad; }
     mat4 trans; //hold the transfoomr values, center point its at
     float intersection(ray r) {
         vec3 newxyz = xyz*mat3(modelview);
         float a = dot(r.dir, r.dir);
         
-        float b = dot(vec3(r.dir.x * 2, r.dir.y * 2, r.dir.z * 2), (r.orig - newxyz));
+        float b = dot(vec3(r.dir.x, r.dir.y, r.dir.z), (r.orig - newxyz)) * 2;
 
         float c = dot((r.orig - newxyz), (r.orig - newxyz)) - (rad * rad);
         float determine = (b * b) - (4 * a * c);
@@ -83,7 +83,7 @@ public:
    
 private:
     vec3 xyz;
-    int rad;
+    float rad;
 };
 
 class Triangle : public Scene {

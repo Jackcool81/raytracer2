@@ -75,7 +75,7 @@ float Intersection(float min_t, Scene min_primitive) {
 bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
-    /*
+    
     float t = sa.intersection(r);
     if (t == 0) {
         return false;
@@ -83,8 +83,8 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
     else {
         return true;
     }
-    */
     
+    /*
     for (int i = 0; i < a.size(); i++) {
         //float t = 0;
         float t = (*a[i]).intersection(r);
@@ -100,6 +100,7 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
             min_t = t;
         }
     }
+    */
     
     return false;
     //loop through all primitives in the scene (passed in parameter)
@@ -131,8 +132,8 @@ int main(int argc, char* argv[]) {
     
     // Image
     const auto aspect_ratio = 1;
-    const int image_width = w;
-    const int image_height = h; // static_cast<int>(image_width / aspect_ratio);
+    const float image_width = w;
+    const float image_height = h; // static_cast<int>(image_width / aspect_ratio);
 
     // Camera
 
@@ -145,17 +146,19 @@ int main(int argc, char* argv[]) {
     
     auto vertical = vec3(0, viewport_height, 0);
    // auto lower_left_corner = origin - divide(horizontal, 2) - divide(vertical,2) - vec3(0, 0, focal_length);
+    
+    //fov 
     float newFovy = tan(fovy / 2);
-     
-    float fovx = newFovy * (image_width/image_height);
+     //with the aspect ratio
+    float fovx = newFovy * (float(image_width) / float(image_height));
     // Render
     vec3 w = eyeinit - center;
     w = (eyeinit - center) / sqrt((w.x * w.x) + (w.y * w.y) + (w.z * w.z));
 
 
-    vec3 u = cross(upinit, w);
+    vec3 u = cross(glm::normalize(upinit), w);
 
-    u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
+    //u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
 
     vec3 v = cross(w, u);
 
@@ -163,7 +166,7 @@ int main(int argc, char* argv[]) {
 
     modelview = lookAt(eyeinit, center, upinit);
 
-    Sphere s = Sphere(vec3(1, 0, 0), 0.15);
+    Sphere s = Sphere(vec3(0, 0, 0), 1);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
@@ -175,12 +178,14 @@ int main(int argc, char* argv[]) {
             //auto u = double(i) / (image_width - 1);
             //auto v = double(j) / (image_height - 1);
             //dir = aU + bV - W
-            float alpha = fovx * ((j - (image_width / 2)) / (image_width / 2));
-            float beta = newFovy * (((image_height / 2) - i) / (image_height / 2));
+            float alpha = fovx * ((j - (float(image_width) / 2)) / (float(image_width) / 2));
+            float beta = newFovy * (((float(image_height) / 2) - i) / (float(image_height) / 2));
             vec3 direction = (alpha * u) + (beta * v) - w;
             direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             //direction = glm::normalize(direction);
             ray r(origin, direction);
+            //printf("%f %f %f", origin, direction);
+
             bool rayhit = FindIntersection(r, newScene.objectz, newScene, s);
             //check intersection with the ray and the scene
             int* pixel_color;
