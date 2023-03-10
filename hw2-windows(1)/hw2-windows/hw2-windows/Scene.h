@@ -56,11 +56,11 @@ public:
         vec3 rayorigin = mat3(inverse(trans)) * r.orig;
         vec3 raydirection = mat3(inverse(trans)) * r.dir;
         vec3 newxyz = xyz;
-        float a = dot(r.dir, r.dir);
+        float a = dot(raydirection, raydirection);
         
-        float b = dot(vec3(r.dir.x, r.dir.y, r.dir.z), (r.orig - newxyz)) * 2;
+        float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
 
-        float c = dot((r.orig - newxyz), (r.orig - newxyz)) - (rad * rad);
+        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
