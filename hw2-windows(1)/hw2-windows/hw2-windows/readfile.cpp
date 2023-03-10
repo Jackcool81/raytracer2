@@ -181,7 +181,7 @@ void readfile(const char* filename, Scene& newScene)
                        
                         //Triangle t = 
 
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]]));
+                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], transfstack.top()));
                         newScene.types.push_back("Triangle");
                     }
                 }
@@ -192,7 +192,7 @@ void readfile(const char* filename, Scene& newScene)
                         //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
                         //Sphere s = new Sphere(vec3(values[0], values[1], values[2]), values[4]);
                         //s.trans = transfstack.top();              
-                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3]));
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3], transfstack.top()));
                         
                         newScene.types.push_back("Sphere");
                        
