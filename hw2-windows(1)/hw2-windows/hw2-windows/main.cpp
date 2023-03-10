@@ -72,7 +72,7 @@ float Intersection(float min_t, Scene min_primitive) {
     return 0;
 }
 */
-bool FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
+int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
     /*
@@ -85,7 +85,7 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     }
     
     */
-    
+    int pixel_color[3] = { 0,0,0 };
     float t = 0;
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
@@ -98,8 +98,17 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
 
         }
 
-        if (t > 0) {
-            return true;
+        if (t > 0 && newScene.types[i] == "Sphere") {
+            pixel_color[0] = 0;
+            pixel_color[1] = 255;
+            pixel_color[2] = 255;
+           
+        }
+        else if (t > 0 && newScene.types[i] == "Triangle") {
+            pixel_color[0] = 255;
+            pixel_color[1] = 0;
+            pixel_color[2] = 255;
+            
         }
        
         if (t > 0 && t < min_t) {
@@ -109,7 +118,9 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
 
 
     }
-    return false;
+
+ 
+    return pixel_color;
   
     
    
@@ -196,15 +207,9 @@ int main(int argc, char* argv[]) {
           
             //printf("%f %f %f", origin, direction);
 
-            bool rayhit = FindIntersection(r, newScene.objectz, newScene);
+            int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
             //check intersection with the ray and the scene
-            int* pixel_color;
-            if (rayhit) {
-                pixel_color = new int[3] {0, 255, 255};
-            }
-            else {
-                pixel_color = new int[3] {0, 0, 0};
-            }
+       
 
             
             //depending on the intersection compute the color 

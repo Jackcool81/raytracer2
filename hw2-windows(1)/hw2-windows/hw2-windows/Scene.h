@@ -108,15 +108,15 @@ public:
 
    
     float intersection(ray r) { 
-        vec3 normal = cross((C - A), (B - A));
-        normal = normal / sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+        vec3 normal = glm::normalize(cross((C - A), (B - A)));
+        //normal = normal / sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
 
         if (dot(r.dir, normal) == 0) {
             return 0;
         }
 
         float t = dot(normal, (A - r.orig)) / dot(r.dir, normal);
-
+       // float t = (dot(A, normal) - dot(r.orig, normal)) / dot(r.dir, normal);
         vec3 P = r.orig + (t * r.dir);
 
         vec3 xyz = P - A;
@@ -125,14 +125,14 @@ public:
         float y = xyz.y;
         float z = xyz.z;
 
-        vec3 xyzprime = B - A;
-
+        vec3 xyzprime = C - A;
+        
         float xprime = xyzprime.x;
         float yprime = xyzprime.y;
         float zprime = xyzprime.z;
 
-        vec3 xyzbar = C - A;
-
+        vec3 xyzbar = B - A;
+       
         float xbar = xyzbar.x;
         float ybar = xyzbar.y;
         float zbar = xyzbar.z;
@@ -140,10 +140,10 @@ public:
         float gammaNumerator = (y - ((x * ybar) / xbar));
         float gammaDenominator = (yprime - ((xprime * ybar) / xbar));
         float gamma = gammaNumerator / gammaDenominator;
-        float beta = (1 / xbar) * (x - gamma * xprime);
-        float alpha = 1 - gamma - beta;
+        float beta = (1.0 / xbar) * (x - (gamma * xprime));
+        float alpha = 1.0 - gamma - beta;
 
-        if (alpha >= 0 && gamma >= 0 && beta >= 0) {
+        if ((alpha >= 0 && alpha <= 1) && (gamma >= 0 && gamma <= 1) && (beta <= 1 && beta >= 0)) {
             return 1;
         }
         return 0;
