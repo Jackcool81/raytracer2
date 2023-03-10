@@ -17,13 +17,6 @@ public:
         : orig(origin), dir(direction)
     {}
 
-    vec3 origin() const { return orig; }
-    vec3 direction() const { return dir; }
-
-    vec3 at(double t) const {
-        return orig + vec3(t * dir[0], t * dir[1], t * dir[2]);
-    }
-
 public:
     vec3 orig;
     vec3 dir;

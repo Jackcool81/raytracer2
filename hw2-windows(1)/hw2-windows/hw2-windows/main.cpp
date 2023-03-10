@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 
 
     //fov 
-    fovy = fovy * (3.14 / 180.0);
+    fovy = fovy * (3.14159265 / 180.0);
     float newFovy = tan(fovy / 2.0);
      //with the aspect ratio
     float aspect = image_width / image_height;
@@ -182,13 +182,20 @@ int main(int argc, char* argv[]) {
     int pix = image_width * image_height;
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
-    for (float j = 0; j < image_height; ++j) {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-        for (float i = 0; i < image_width; ++i) {
+    for (float i = 0; i < image_height; ++i) {
+        for (float j = 0; j < image_width; ++j) {
            
             //dir = aU + bV - W
+
+
+
             float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
+
+
             float beta = newFovy * (((float(image_height) / 2.0) - i) / (float(image_height) / 2.0));
+
+
+
             vec3 direction = (alpha * u) + (beta * v) - w;
             //direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction = glm::normalize(direction);
