@@ -182,9 +182,9 @@ int main(int argc, char* argv[]) {
     int pix = image_width * image_height;
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
-    for (float j = 0; j < image_height; ++j) {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-        for (float i = 0; i < image_width; ++i) {
+    for (float i = 0; i < image_height; ++i) {
+       
+        for (float j = 0; j < image_width; ++j) {
            
             //dir = aU + bV - W
             float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
