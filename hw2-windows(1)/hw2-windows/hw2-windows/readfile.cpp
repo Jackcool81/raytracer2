@@ -179,9 +179,9 @@ void readfile(const char* filename, Scene& newScene)
                     validinput = readvals(s, 3, values); // 10 values eye cen up fov
                     if (validinput) {
                        
-                        Triangle t = Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]]);
+                        //Triangle t = 
 
-                        newScene.objectz.push_back(&t);
+                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]]));
                         newScene.types.push_back("Triangle");
                     }
                 }
@@ -190,9 +190,9 @@ void readfile(const char* filename, Scene& newScene)
                     validinput = readvals(s, 4, values); // 10 values eye cen up fov
                     if (validinput) {
                         //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
-                        Sphere s = Sphere(vec3(values[0], values[1], values[2]), values[4]);
-                        s.trans = transfstack.top();              
-                        newScene.objectz.push_back(&s);
+                        //Sphere s = new Sphere(vec3(values[0], values[1], values[2]), values[4]);
+                        //s.trans = transfstack.top();              
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3]));
                         newScene.types.push_back("Sphere");
                         //Populate them the same way as before:
                         //baselist[0] = new Computer();
