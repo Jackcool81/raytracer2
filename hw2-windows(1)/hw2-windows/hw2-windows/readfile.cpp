@@ -249,17 +249,21 @@ void readfile(const char* filename, Scene& newScene)
                         // Think about how the transformation stack is affected
                         // You might want to use helper functions on top of file. 
                         // Also keep in mind what order your matrix is!
+                        mat4 transMat = Transform::translate(values[0], values[1], values[2]);
+                        rightmultiply(transMat, transfstack);
 
                     }
                 }
                 else if (cmd == "scale") {
                     validinput = readvals(s,3,values); 
                     if (validinput) {
-
+                     
                         // YOUR CODE FOR HW 2 HERE.  
                         // Think about how the transformation stack is affected
                         // You might want to use helper functions on top of file.  
                         // Also keep in mind what order your matrix is!
+                        mat4 scalingMat = Transform::scale(values[0], values[1], values[2]);
+                        rightmultiply(scalingMat, transfstack);
 
                     }
                 }
@@ -273,6 +277,13 @@ void readfile(const char* filename, Scene& newScene)
                         // See how the stack is affected, as above.  
                         // Note that rotate returns a mat3. 
                         // Also keep in mind what order your matrix is!
+                        vec3 axis = vec3(values[0], values[1], values[2]);
+                        mat3 rotation = Transform::rotate(values[3], axis);
+                        mat4 homogenized = mat4(rotation[0][0], rotation[0][1], rotation[0][2], 0,
+                            rotation[1][0], rotation[1][1], rotation[1][2], 0,
+                            rotation[2][0], rotation[2][1], rotation[2][2], 0,
+                            0, 0, 0, 1);
+                        rightmultiply(homogenized, transfstack);
 
                     }
                 }
