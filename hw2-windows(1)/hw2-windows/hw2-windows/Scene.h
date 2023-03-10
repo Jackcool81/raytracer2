@@ -52,6 +52,9 @@ public:
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
     float intersection(ray r) {
+
+        vec3 rayorigin = mat3(inverse(trans)) * r.orig;
+        vec3 raydirection = mat3(inverse(trans)) * r.dir;
         vec3 newxyz = xyz;
         float a = dot(r.dir, r.dir);
         
@@ -105,7 +108,14 @@ public:
         : A(verts), B(verts2), C(verts3), trans(transformation)
     {}
 
+    float barycentric(vec3 normal, vec3 edge1, vec3 edge2, vec3 point, vec3 intersec) {
+        vec3 vec_cross = cross(normal, edge1);
+        vec3 ap_normal = vec_cross / dot(vec_cross, edge2);
+        float ap_w = dot(-ap_normal, point);
 
+        return dot(ap_normal, intersec) + ap_w;
+    }
+        
    
     float intersection(ray r) { 
         vec3 normal = glm::normalize(cross((C - A), (B - A)));
@@ -117,7 +127,20 @@ public:
 
         float t = dot(normal, (A - r.orig)) / dot(r.dir, normal);
        // float t = (dot(A, normal) - dot(r.orig, normal)) / dot(r.dir, normal);
+       
         vec3 P = r.orig + (t * r.dir);
+
+        float a = barycentric(normal, C - B, A - C, C, P);
+
+        float b = barycentric(normal, A - C, B - A, A, P);
+
+        float c = 1 - a - b;
+
+        if (a >= 0 && b >= 0 && c >= 0) {
+            return t;
+        }
+        return 0;
+
 
         vec3 xyz = P - A;
 
@@ -142,8 +165,12 @@ public:
         float gamma = gammaNumerator / gammaDenominator;
         float beta = (1.0 / xbar) * (x - (gamma * xprime));
         float alpha = 1.0 - gamma - beta;
-
+        /*
         if ((alpha >= 0 && alpha <= 1) && (gamma >= 0 && gamma <= 1) && (beta <= 1 && beta >= 0)) {
+            return 1;
+        }
+        */
+        if (alpha >= 0 && gamma >= 0 && beta >= 0) {
             return 1;
         }
         return 0;

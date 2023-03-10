@@ -98,22 +98,23 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
 
         }
 
-        if (t > 0 && newScene.types[i] == "Sphere") {
-            pixel_color[0] = 0;
-            pixel_color[1] = 255;
-            pixel_color[2] = 255;
-           
-        }
-        else if (t > 0 && newScene.types[i] == "Triangle") {
-            pixel_color[0] = 255;
-            pixel_color[1] = 0;
-            pixel_color[2] = 255;
-            
-        }
+       
        
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
+            if (t > 0 && newScene.types[i] == "Sphere") {
+                pixel_color[0] = 0;
+                pixel_color[1] = 255;
+                pixel_color[2] = 255;
+
+            }
+            else if (t > 0 && newScene.types[i] == "Triangle") {
+                pixel_color[0] = 255;
+                pixel_color[1] = 0;
+                pixel_color[2] = 255;
+
+            }
         }
 
 
