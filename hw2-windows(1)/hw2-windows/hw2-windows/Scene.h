@@ -110,49 +110,43 @@ public:
     float intersection(ray r) { 
         vec3 normal = cross((C - A), (B - A));
         normal = normal / sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
-        
+
         if (dot(r.dir, normal) == 0) {
             return 0;
         }
-        float t = dot(normal, (A - r.orig))/ dot(r.dir,normal);
+
+        float t = dot(normal, (A - r.orig)) / dot(r.dir, normal);
 
         vec3 P = r.orig + (t * r.dir);
 
-        //is point on triangle
-        
-        vec3 ABcrossAP = glm::normalize(cross(B - A, P - A));
-        
-        float Numerator = dot(ABcrossAP, normal);
-        
-        
-        vec3 inter;
+        vec3 xyz = P - A;
 
-        // edge 0
-        vec3 edge0 = B - A;
-        vec3 vp0 = P - A;
+        float x = xyz.x;
+        float y = xyz.y;
+        float z = xyz.z;
 
-        inter = cross(edge0, vp0); // edge0.crossProduct(vp0);
-        if (dot(normal, inter) < 0) return 0; // P is on the right side
+        vec3 xyzprime = B - A;
 
-        /*
-        // edge 1
-        vec3 edge1 = C - B;
-        vec3 vp1 = P - B;
-        inter = cross(edge1, vp1); // edge1.crossProduct(vp1);
-        if (dot(normal, inter) < 0)  return 0; // P is on the right side
+        float xprime = xyzprime.x;
+        float yprime = xyzprime.y;
+        float zprime = xyzprime.z;
 
-        // edge 2
-        vec3 edge2 = A - C;
-        vec3 vp2 = P - C;
-        inter = cross(edge2, vp2); // edge2.crossProduct(vp2);
-        if (dot(normal, inter) < 0) return 0; // P is on the right side;
-        */
-        float Denom = dot(normal, normal);
+        vec3 xyzbar = C - A;
 
-        float v = Numerator / Denom;
+        float xbar = xyzbar.x;
+        float ybar = xyzbar.y;
+        float zbar = xyzbar.z;
 
+        float gammaNumerator = (y - ((x * ybar) / xbar));
+        float gammaDenominator = (yprime - ((xprime * ybar) / xbar));
+        float gamma = gammaNumerator / gammaDenominator;
+        float beta = (1 / xbar) * (x - gamma * xprime);
+        float alpha = 1 - gamma - beta;
 
-        return t; 
+        if (alpha >= 0 && gamma >= 0 && beta >= 0) {
+            return 1;
+        }
+        return 0;
     }
 
 

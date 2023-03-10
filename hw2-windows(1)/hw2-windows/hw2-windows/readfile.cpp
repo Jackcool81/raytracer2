@@ -193,10 +193,9 @@ void readfile(const char* filename, Scene& newScene)
                         //Sphere s = new Sphere(vec3(values[0], values[1], values[2]), values[4]);
                         //s.trans = transfstack.top();              
                         newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3]));
+                        
                         newScene.types.push_back("Sphere");
-                        //Populate them the same way as before:
-                        //baselist[0] = new Computer();
-                        //baselist[1] = new Appliance();
+                       
                     }
                     
                 }

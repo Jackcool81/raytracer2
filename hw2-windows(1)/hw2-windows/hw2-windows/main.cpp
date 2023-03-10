@@ -42,7 +42,7 @@ void saveScreenshot(BYTE pixels[], string fname) {
   //3 is for the color value of each pixel
   
 
-  FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
+  FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
 
   std::cout << "Saving screenshot: " << fname << "\n";
 
@@ -72,7 +72,7 @@ float Intersection(float min_t, Scene min_primitive) {
     return 0;
 }
 */
-bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
+bool FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
     /*
@@ -142,65 +142,65 @@ int main(int argc, char* argv[]) {
     readfile(argv[1], newScene);
     
     // Image
-    const auto aspect_ratio = 1;
+
     const float image_width = w;
     const float image_height = h; // static_cast<int>(image_width / aspect_ratio);
 
     // Camera
 
-    auto viewport_height = 2.0;
-    auto viewport_width = aspect_ratio * viewport_height;
-    auto focal_length = 1.0;
+
    
     auto origin = eyeinit;
-    auto horizontal = vec3(viewport_width, 0, 0);
     
-    auto vertical = vec3(0, viewport_height, 0);
-   // auto lower_left_corner = origin - divide(horizontal, 2) - divide(vertical,2) - vec3(0, 0, focal_length);
-    
+    float degreeToRad = (3.14 / 180.0);
+    float radToDegrees = (180 / 3.14);
+
+
     //fov 
     fovy = fovy * (3.14 / 180.0);
     float newFovy = tan(fovy / 2.0);
      //with the aspect ratio
-    float fovx = newFovy * float(float(image_width) / float(image_height));
+    float aspect = image_width / image_height;
+    float fovx = (newFovy * aspect);
+
     // Render
-    vec3 w = eyeinit - center;
-    w = (eyeinit - center) / sqrt((w.x * w.x) + (w.y * w.y) + (w.z * w.z));
-
-
-    vec3 u = cross(upinit, w);
-
-    u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
-
+    vec3 w = glm::normalize(eyeinit - center);
+    vec3 u = glm::normalize(cross(upinit, w));
     vec3 v = cross(w, u);
 
+ 
+   
+   // fovx = tan(fovy / (2.0 * degreeToRad));
+    //fovx *= image_width / (float)image_height;
+   // fovx = 2 * atan(fovx);
+   // fovx = fovx * radToDegrees;
+   
+
+
+   
     //do we have to normalize as we did in lookat
 
     modelview = lookAt(eyeinit, center, upinit);
-
-    Sphere s = Sphere(vec3(0, 0, 0), 0.15);
-    Triangle t = Triangle(newScene.vertexs[0], newScene.vertexs[1], newScene.vertexs[2]);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
-    for (float j = image_height - 1; j >= 0; --j) {
+    for (float j = 0; j < image_height; ++j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (float i = 0; i < image_width; ++i) {
-            //auto u = double(i) / (image_width - 1);
-            //auto v = double(j) / (image_height - 1);
+           
             //dir = aU + bV - W
             float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
             float beta = newFovy * (((float(image_height) / 2.0) - i) / (float(image_height) / 2.0));
             vec3 direction = (alpha * u) + (beta * v) - w;
-            direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
-            //direction = glm::normalize(direction);
+            //direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
+            direction = glm::normalize(direction);
             ray r(origin, direction);
           
             //printf("%f %f %f", origin, direction);
 
-            bool rayhit = FindIntersection(r, newScene.objectz, newScene, s);
+            bool rayhit = FindIntersection(r, newScene.objectz, newScene);
             //check intersection with the ray and the scene
             int* pixel_color;
             if (rayhit) {
