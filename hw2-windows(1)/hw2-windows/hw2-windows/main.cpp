@@ -84,25 +84,38 @@ bool FindIntersection(ray r, vector<Scene*> a, Scene newScene, Sphere sa) {
         return true;
     }
     
+
     /*
-    for (int i = 0; i < a.size(); i++) {
+    float t = 0;
+    for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
-        float t = (*a[i]).intersection(r);
-        if (t == 0) {
-            return false;
+        
+        if (newScene.types[i] == "Sphere") {
+            t = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
         }
         else {
-            return true;
+            t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+
         }
+
 
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
         }
+
+
     }
-    */
+
+    if (t == 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
     
-    return false;
+    */
+   
     //loop through all primitives in the scene (passed in parameter)
         //t = the intersection for each primitive (shape) (smallest positive root)
           //t > 0 && t < min_t:
@@ -148,17 +161,18 @@ int main(int argc, char* argv[]) {
    // auto lower_left_corner = origin - divide(horizontal, 2) - divide(vertical,2) - vec3(0, 0, focal_length);
     
     //fov 
-    float newFovy = tan((fovy * (180.0 / 3.14)) / 2);
+    fovy = fovy * (3.14 / 180.0);
+    float newFovy = tan(fovy / 2.0);
      //with the aspect ratio
-    float fovx = newFovy * (float(image_width) / float(image_height));
+    float fovx = newFovy * float(float(image_width) / float(image_height));
     // Render
     vec3 w = eyeinit - center;
     w = (eyeinit - center) / sqrt((w.x * w.x) + (w.y * w.y) + (w.z * w.z));
 
 
-    vec3 u = cross(glm::normalize(upinit), w);
+    vec3 u = cross(upinit, w);
 
-    //u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
+    u = u / sqrt((u.x * u.x) + (u.y * u.y) + (u.z * u.z));
 
     vec3 v = cross(w, u);
 
@@ -166,24 +180,26 @@ int main(int argc, char* argv[]) {
 
     modelview = lookAt(eyeinit, center, upinit);
 
-    Sphere s = Sphere(vec3(.5, -1, .5), 0.15);
+    Sphere s = Sphere(vec3(0, 0, 0), 0.15);
+    Triangle t = Triangle(newScene.vertexs[0], newScene.vertexs[1], newScene.vertexs[2]);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
-    for (int j = image_height - 1; j >= 0; --j) {
+    for (float j = image_height - 1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-        for (int i = 0; i < image_width; ++i) {
+        for (float i = 0; i < image_width; ++i) {
             //auto u = double(i) / (image_width - 1);
             //auto v = double(j) / (image_height - 1);
             //dir = aU + bV - W
-            float alpha = fovx * ((j - (float(image_width) / 2)) / (float(image_width) / 2));
-            float beta = newFovy * (((float(image_height) / 2) - i) / (float(image_height) / 2));
+            float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
+            float beta = newFovy * (((float(image_height) / 2.0) - i) / (float(image_height) / 2.0));
             vec3 direction = (alpha * u) + (beta * v) - w;
             direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             //direction = glm::normalize(direction);
             ray r(origin, direction);
+          
             //printf("%f %f %f", origin, direction);
 
             bool rayhit = FindIntersection(r, newScene.objectz, newScene, s);
