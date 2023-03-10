@@ -42,7 +42,7 @@ void saveScreenshot(BYTE pixels[], string fname) {
   //3 is for the color value of each pixel
   
 
-  FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+  FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 
   std::cout << "Saving screenshot: " << fname << "\n";
 
@@ -141,16 +141,12 @@ int main(int argc, char* argv[]) {
     FreeImage_Initialise();
     readfile(argv[1], newScene);
     
-    // Image
-
-    const float image_width = w;
-    const float image_height = h; // static_cast<int>(image_width / aspect_ratio);
-
-    // Camera
 
 
-   
-    auto origin = eyeinit;
+    float image_width = w;
+    float image_height = h;
+
+    vec3 origin = eyeinit;
     
     float degreeToRad = (3.14 / 180.0);
     float radToDegrees = (180 / 3.14);
@@ -180,7 +176,7 @@ int main(int argc, char* argv[]) {
    
     //do we have to normalize as we did in lookat
 
-    modelview = lookAt(eyeinit, center, upinit);
+    //modelview = lookAt(eyeinit, center, upinit);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;

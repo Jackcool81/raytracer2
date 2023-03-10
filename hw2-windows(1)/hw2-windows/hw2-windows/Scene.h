@@ -53,7 +53,7 @@ public:
     float radius() const { return rad; }
     mat4 trans; //hold the transfoomr values, center point its at
     float intersection(ray r) {
-        vec3 newxyz = xyz*mat3(modelview);
+        vec3 newxyz = xyz;
         float a = dot(r.dir, r.dir);
         
         float b = dot(vec3(r.dir.x, r.dir.y, r.dir.z), (r.orig - newxyz)) * 2;
