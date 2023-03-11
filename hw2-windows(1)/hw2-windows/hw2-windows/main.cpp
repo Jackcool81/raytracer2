@@ -87,6 +87,9 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     */
     int pixel_color[3] = { 0,0,0 };
     float t = 0;
+    float hit = -1;
+    string thetype = "";
+
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
         
@@ -103,24 +106,32 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
-            if (t > 0 && newScene.types[i] == "Sphere") {
-                pixel_color[0] = 0;
-                pixel_color[1] = 255;
-                pixel_color[2] = 255;
-
+            
+            float distance = glm::distance(r.orig, r.inter);
+            if (hit < 0 || distance < hit) {
+                thetype = newScene.types[i];
+                hit = distance;
             }
-            else if (t > 0 && newScene.types[i] == "Triangle") {
-                pixel_color[0] = 255;
-                pixel_color[1] = 0;
-                pixel_color[2] = 255;
 
-            }
+           
         }
 
 
     }
 
- 
+    if (thetype == "Sphere") {
+        pixel_color[0] = 0;
+        pixel_color[1] = 255;
+        pixel_color[2] = 255;
+        //hit = distance;
+    }
+    else if (thetype == "Triangle") {
+        pixel_color[0] = 255;
+        pixel_color[1] = 0;
+        pixel_color[2] = 255;
+        //hit = distance;
+
+    }
     return pixel_color;
   
     
