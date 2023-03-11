@@ -106,12 +106,15 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
-            
-            float distance = glm::distance(r.orig, r.inter);
+            thetype = newScene.types[i];
+            /*
+              float distance = glm::distance(r.orig, r.inter);
             if (hit < 0 || distance < hit) {
                 thetype = newScene.types[i];
                 hit = distance;
             }
+            */
+          
 
            
         }

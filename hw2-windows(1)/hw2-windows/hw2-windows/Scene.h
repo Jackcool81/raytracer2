@@ -87,23 +87,22 @@ public:
         float minust = (-b - sqrt(determine)) / (2 * a);
 
         //find t then
-        vec3 P = rayorigin + vec3(raydirection.x, raydirection.y, raydirection.z);
-
-        P = vec3(mat3(trans) * P);
-
+   
         
 
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
-                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+               
 
+                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                plust = glm::distance(r.orig, r.inter);
                 return plust;
             }
             else {
 
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
-
+                minust = glm::distance(r.orig, r.inter);
                 return minust;
             }
         }
@@ -112,16 +111,20 @@ public:
         if (plust == minust) {
 
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
+
             return plust;
         }
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
             return plust;
         }
         if (minust > 0 && plust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            minust = glm::distance(r.orig, r.inter);
             return minust;
         }
 
@@ -158,8 +161,7 @@ public:
 
         vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
         vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
-        //vec3 rayorigin = r.orig;
-        //vec3 raydirection = r.dir;
+        
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
 
@@ -173,6 +175,7 @@ public:
 
         if (alpha >= 0 && beta >= 0 && gamma >= 0) {
             r.inter = r.orig + (t * r.dir);
+            t = glm::distance(r.orig, r.inter);
             return t;
         }
         else {
