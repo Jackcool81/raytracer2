@@ -55,6 +55,19 @@ public:
 
         vec3 rayorigin = mat3(inverse(trans)) * r.orig;
         vec3 raydirection = mat3(inverse(trans)) * r.dir;
+
+        /*
+        *  vec3 p, d;
+        p = vec3(m * vec4(position, 1));
+        d = glm::normalize(vec3(m * vec4(direction, 0)));
+        return Ray(p, d);
+        transform the ray
+        */
+       
+        
+
+
+        //compute the hit
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
         
@@ -70,9 +83,17 @@ public:
         float plust = (-b + sqrt(determine))/(2*a);
         float minust = (-b - sqrt(determine)) / (2 * a);
 
+        //find t then
+        vec3 P = rayorigin + vec3(raydirection.x, raydirection.y, raydirection.z);
+
+        P = vec3(mat3(trans) * P);
+
+
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
+
+
                 return plust;
             }
             else {
