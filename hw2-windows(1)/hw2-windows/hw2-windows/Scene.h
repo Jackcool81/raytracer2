@@ -53,23 +53,11 @@ public:
     float radius() const { return rad; }
     float intersection(ray r) {
 
-        //vec3 rayorigin = mat3(inverse(trans)) * r.orig;
-       // vec3 raydirection = glm::normalize(mat3(inverse(trans)) * r.dir);
-
+        
         vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
         vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
 
-        /*
-        *  vec3 p, d;
-        p = vec3(m * vec4(position, 1));
-        d = glm::normalize(vec3(m * vec4(direction, 0)));
-        return Ray(p, d);
-        transform the ray
-        */
-       
         
-
-
         //compute the hit
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
@@ -145,10 +133,10 @@ public:
 
     float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
         vec3 normXEdge1 = cross(normal, Triedge1);
-        vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
-        float w = dot(newNormal, P);
 
-        return dot(newNormal, intersec) + w;
+        vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
+
+        return dot(newNormal, intersec) + dot(newNormal, P);
     }
         
    
