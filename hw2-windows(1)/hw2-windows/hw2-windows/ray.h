@@ -4,9 +4,6 @@
 
 #include <glm/glm.hpp>
 
-#include <GL/glew.h>
-#include <GL/glut.h>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
 
@@ -17,16 +14,15 @@ public:
         : orig(origin), dir(direction)
     {}
 
-    vec3 origin() const { return orig; }
-    vec3 direction() const { return dir; }
 
-    vec3 at(double t) const {
-        return orig + vec3(t * dir[0], t * dir[1], t * dir[2]);
+    vec3 pos(vec3 start, vec3 going, double t) const {
+        return start + vec3(t * going[0], t * going[1], t * going[2]);
     }
 
 public:
     vec3 orig;
     vec3 dir;
+    vec3 inter = vec3(0,0,0);
 };
 
 #endif

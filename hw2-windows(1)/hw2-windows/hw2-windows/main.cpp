@@ -58,35 +58,16 @@ void init() {
 void mult(vec3& vector3, double t) {
     vector3 = vec3(vector3.x * t, vector3.y * t, vector3.z * t);
 }
-/*
-vec3 ray_color(const ray& r) {
-    vec3 unit_direction = vec3(r.direction());
-    auto t = 0.5 * (unit_direction.y + 1.0);
-    return mult(vec3(1.0, 1.0, 1.0), (1.0 - t)) + mult(vec3(0.5, 0.7, 1.0),t) ;
-}
-*/
 
-/*
-float Intersection(float min_t, Scene min_primitive) {
-
-    return 0;
-}
-*/
 int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
-    /*
-    float t = sa.intersection(r);
-    if (t == 0) {
-        return false;
-    }
-    else {
-        return true;
-    }
-    
-    */
+   
     int pixel_color[3] = { 0,0,0 };
     float t = 0;
+    
+    string thetype = "";
+
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
         
@@ -103,24 +84,28 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
-            if (t > 0 && newScene.types[i] == "Sphere") {
-                pixel_color[0] = 0;
-                pixel_color[1] = 255;
-                pixel_color[2] = 255;
-
-            }
-            else if (t > 0 && newScene.types[i] == "Triangle") {
-                pixel_color[0] = 255;
-                pixel_color[1] = 0;
-                pixel_color[2] = 255;
-
-            }
+            thetype = newScene.types[i];
+           
+       
+           
         }
 
 
     }
 
- 
+    if (thetype == "Sphere") {
+        pixel_color[0] = 0;
+        pixel_color[1] = 255;
+        pixel_color[2] = 255;
+        //hit = distance;
+    }
+    else if (thetype == "Triangle") {
+        pixel_color[0] = 255;
+        pixel_color[1] = 0;
+        pixel_color[2] = 255;
+        //hit = distance;
+
+    }
     return pixel_color;
   
     
@@ -160,8 +145,7 @@ int main(int argc, char* argv[]) {
 
     vec3 origin = eyeinit;
     
-    float degreeToRad = (3.14 / 180.0);
-    float radToDegrees = (180 / 3.14);
+  
 
 
     //fov 
@@ -177,18 +161,6 @@ int main(int argc, char* argv[]) {
     vec3 v = cross(w, u);
 
  
-   
-   // fovx = tan(fovy / (2.0 * degreeToRad));
-    //fovx *= image_width / (float)image_height;
-   // fovx = 2 * atan(fovx);
-   // fovx = fovx * radToDegrees;
-   
-
-
-   
-    //do we have to normalize as we did in lookat
-
-    //modelview = lookAt(eyeinit, center, upinit);
 
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
     int pix = image_width * image_height;
@@ -202,11 +174,9 @@ int main(int argc, char* argv[]) {
             float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
             float beta = newFovy * (((float(image_height) / 2.0) - i) / (float(image_height) / 2.0));
             vec3 direction = (alpha * u) + (beta * v) - w;
-            //direction = direction / sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction = glm::normalize(direction);
             ray r(origin, direction);
           
-            //printf("%f %f %f", origin, direction);
 
             int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
             //check intersection with the ray and the scene

@@ -53,14 +53,18 @@ public:
     float radius() const { return rad; }
     float intersection(ray r) {
 
-        vec3 rayorigin = mat3(inverse(trans)) * r.orig;
-        vec3 raydirection = mat3(inverse(trans)) * r.dir;
-        vec3 newxyz = xyz;
-        float a = dot(r.dir, r.dir);
         
-        float b = dot(vec3(r.dir.x, r.dir.y, r.dir.z), (r.orig - newxyz)) * 2;
+        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
+        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
 
-        float c = dot((r.orig - newxyz), (r.orig - newxyz)) - (rad * rad);
+        
+        //compute the hit
+        vec3 newxyz = xyz;
+        float a = dot(raydirection, raydirection);
+        
+        float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
+
+        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
@@ -70,26 +74,45 @@ public:
         float plust = (-b + sqrt(determine))/(2*a);
         float minust = (-b - sqrt(determine)) / (2 * a);
 
+        //find t then
+   
+        
+
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
+               
+
+                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                plust = glm::distance(r.orig, r.inter);
                 return plust;
             }
             else {
+
+                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+                minust = glm::distance(r.orig, r.inter);
                 return minust;
             }
         }
 
         //if both equal to eachother
         if (plust == minust) {
+
+            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
+
             return plust;
         }
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
+            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
             return plust;
         }
         if (minust > 0 && plust < 0) {
+            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            minust = glm::distance(r.orig, r.inter);
             return minust;
         }
 
@@ -108,72 +131,46 @@ public:
         : A(verts), B(verts2), C(verts3), trans(transformation)
     {}
 
-    float barycentric(vec3 normal, vec3 edge1, vec3 edge2, vec3 point, vec3 intersec) {
-        vec3 vec_cross = cross(normal, edge1);
-        vec3 ap_normal = vec_cross / dot(vec_cross, edge2);
-        float ap_w = dot(-ap_normal, point);
+    float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
+        vec3 normXEdge1 = cross(normal, Triedge1);
 
-        return dot(ap_normal, intersec) + ap_w;
+        vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
+
+        return dot(newNormal, intersec) + dot(newNormal, P);
     }
         
    
     float intersection(ray r) { 
         vec3 normal = glm::normalize(cross((C - A), (B - A)));
-        //normal = normal / sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
 
         if (dot(r.dir, normal) == 0) {
             return 0;
         }
 
-        float t = dot(normal, (A - r.orig)) / dot(r.dir, normal);
-       // float t = (dot(A, normal) - dot(r.orig, normal)) / dot(r.dir, normal);
-       
-        vec3 P = r.orig + (t * r.dir);
+        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
+        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
+        
+        float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
+      
 
-        float a = barycentric(normal, C - B, A - C, C, P);
+        vec3 P = rayorigin + (t * raydirection);
 
-        float b = barycentric(normal, A - C, B - A, A, P);
+        float beta = SolveBary(normal, C - B, A - C, C, P);
 
-        float c = 1 - a - b;
+        float gamma = SolveBary(normal, A - C, B - A, A, P);
 
-        if (a >= 0 && b >= 0 && c >= 0) {
+        float alpha = 1 - beta - gamma;
+
+        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+            r.inter = r.orig + (t * r.dir);
+            t = glm::distance(r.orig, r.inter);
             return t;
         }
-        return 0;
-
-
-        vec3 xyz = P - A;
-
-        float x = xyz.x;
-        float y = xyz.y;
-        float z = xyz.z;
-
-        vec3 xyzprime = C - A;
-        
-        float xprime = xyzprime.x;
-        float yprime = xyzprime.y;
-        float zprime = xyzprime.z;
-
-        vec3 xyzbar = B - A;
+        else {
+            return 0;
+        }
        
-        float xbar = xyzbar.x;
-        float ybar = xyzbar.y;
-        float zbar = xyzbar.z;
 
-        float gammaNumerator = (y - ((x * ybar) / xbar));
-        float gammaDenominator = (yprime - ((xprime * ybar) / xbar));
-        float gamma = gammaNumerator / gammaDenominator;
-        float beta = (1.0 / xbar) * (x - (gamma * xprime));
-        float alpha = 1.0 - gamma - beta;
-        /*
-        if ((alpha >= 0 && alpha <= 1) && (gamma >= 0 && gamma <= 1) && (beta <= 1 && beta >= 0)) {
-            return 1;
-        }
-        */
-        if (alpha >= 0 && gamma >= 0 && beta >= 0) {
-            return 1;
-        }
-        return 0;
     }
 
 
