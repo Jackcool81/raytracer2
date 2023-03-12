@@ -44,26 +44,24 @@ private:
 class Sphere : public Scene {
 public:
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation)
-        : xyz(center), rad(radius), trans(transformation)
+    Sphere(const vec3& center, const float& radius, const mat4& inverseTransform, const vec3& invertedRayOrigin)
+        : xyz(center), rad(radius), trans(inverseTransform), rayorigin(invertedRayOrigin)
     {}
+
     //do we need to multiple our orignal center by the modelview then the transform matrix? 
 
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
     float intersection(ray r) {
 
-        
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
+       
+        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
 
         
         //compute the hit
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
-        
         float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
-
         float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
         float determine = (b * b) - (4 * a * c);
 
@@ -123,37 +121,37 @@ private:
     vec3 xyz;
     float rad;
     mat4 trans;
+    vec3 rayorigin;
 };
 
 class Triangle : public Scene {
 public:
-    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& transformation)
-        : A(verts), B(verts2), C(verts3), trans(transformation)
+    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3)
+        : A(verts), B(verts2), C(verts3) 
     {}
 
     float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
         vec3 normXEdge1 = cross(normal, Triedge1);
-
         vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
-
         return dot(newNormal, intersec) + dot(newNormal, P);
     }
         
    
     float intersection(ray r) { 
+      
         vec3 normal = glm::normalize(cross((C - A), (B - A)));
 
         if (dot(r.dir, normal) == 0) {
             return 0;
         }
 
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
+        //vec3 rayorigin = vec3(inverseTrans * vec4(r.orig, 1));
+        //vec3 raydirection = glm::normalize(vec3(inverseTrans * vec4(r.dir, 0)));
         
-        float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
+        float t = dot(normal, (A - r.orig)) / dot(r.dir, normal);
       
 
-        vec3 P = rayorigin + (t * raydirection);
+        vec3 P = r.pos(r.orig,r.dir,t);
 
         float beta = SolveBary(normal, C - B, A - C, C, P);
 
@@ -162,8 +160,8 @@ public:
         float alpha = 1 - beta - gamma;
 
         if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            r.inter = r.orig + (t * r.dir);
-            t = glm::distance(r.orig, r.inter);
+           
+            t = glm::distance(r.orig, P);
             return t;
         }
         else {
@@ -178,7 +176,8 @@ private:
     vec3 A;
     vec3 B;
     vec3 C;
-    mat4 trans;
+    mat4 inverseTrans;
+    vec3 rayorigin;
 };
 
 class Quad : public Scene {

@@ -80,7 +80,7 @@ void readfile(const char* filename, Scene& newScene)
         // This is done using standard STL Templates 
         stack <mat4> transfstack; 
         transfstack.push(mat4(1.0));  // identity
-        
+        vec3 rayorigin;
         getline (in, str); 
         while (in) {
             if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
@@ -165,6 +165,7 @@ void readfile(const char* filename, Scene& newScene)
                         upinit = glm::vec3(values[6], values[7], values[8]);
                         fovy = values[9];
 
+
                     }
                 }
 
@@ -180,8 +181,14 @@ void readfile(const char* filename, Scene& newScene)
                     if (validinput) {
                        
                         //Triangle t = 
-
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], transfstack.top()));
+                        mat4 trans = transfstack.top();
+                        mat4 inverseTrans = inverse(trans);
+                        rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
+                        vec4 transformedX = vec4(newScene.vertexs[values[0]],1) * trans;
+                        vec4 transformedY = vec4(newScene.vertexs[values[1]], 1) * trans;
+                        vec4 transformedZ = vec4(newScene.vertexs[values[2]], 1) * trans;
+                   
+                        newScene.objectz.push_back(new Triangle(vec3(transformedX),vec3(transformedY),vec3(transformedZ)));
                         newScene.types.push_back("Triangle");
                     }
                 }
@@ -191,11 +198,13 @@ void readfile(const char* filename, Scene& newScene)
                     if (validinput) {
                         //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
                         //Sphere s = new Sphere(vec3(values[0], values[1], values[2]), values[4]);
-                        //s.trans = transfstack.top();              
-                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3], transfstack.top()));
-                        
+                        //s.trans = transfstack.top(); 
+                        mat4 trans = transfstack.top();
+                        mat4 inverseTrans = inverse(trans);
+                        rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3], inverseTrans, rayorigin));
                         newScene.types.push_back("Sphere");
-                       
+         
                     }
                     
                 }
