@@ -180,8 +180,10 @@ void readfile(const char* filename, Scene& newScene)
                     if (validinput) {
                        
                         //Triangle t = 
-
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], transfstack.top()));
+                        mat4 trans = transfstack.top();
+                        mat4 inverseTrans = inverse(trans);
+                        vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
+                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, rayorigin));
                         newScene.types.push_back("Triangle");
                     }
                 }
@@ -189,11 +191,12 @@ void readfile(const char* filename, Scene& newScene)
                 else if (cmd == "sphere") {
                     validinput = readvals(s, 4, values); // 10 values eye cen up fov
                     if (validinput) {
-                        //vec3 newstuff = vec3(values[0], values[1], values[2])* mat3(1.0);
-                        //Sphere s = new Sphere(vec3(values[0], values[1], values[2]), values[4]);
-                        //s.trans = transfstack.top();              
-                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3], transfstack.top()));
-                        
+                          
+                        mat4 trans = transfstack.top();
+                        mat4 inverseTrans = inverse(trans);
+                        vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3],trans, inverseTrans, rayorigin));
+               
                         newScene.types.push_back("Sphere");
                        
                     }

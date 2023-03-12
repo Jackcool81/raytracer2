@@ -44,8 +44,8 @@ private:
 class Sphere : public Scene {
 public:
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation)
-        : xyz(center), rad(radius), trans(transformation)
+    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin)
+        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
     {}
     //do we need to multiple our orignal center by the modelview then the transform matrix? 
 
@@ -54,8 +54,8 @@ public:
     float intersection(ray r) {
 
         
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
+        //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
+        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
 
         
         //compute the hit
@@ -123,12 +123,14 @@ private:
     vec3 xyz;
     float rad;
     mat4 trans;
+    mat4 invTrans;
+    vec3 rayorigin;
 };
 
 class Triangle : public Scene {
 public:
-    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& transformation)
-        : A(verts), B(verts2), C(verts3), trans(transformation)
+    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin)
+        : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
     {}
 
     float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
@@ -147,8 +149,8 @@ public:
             return 0;
         }
 
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(inverse(trans) * vec4(r.dir, 0)));
+
+        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
         
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
@@ -179,6 +181,7 @@ private:
     vec3 B;
     vec3 C;
     mat4 trans;
+    vec3 rayorigin;
 };
 
 class Quad : public Scene {
