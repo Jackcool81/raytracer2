@@ -184,9 +184,12 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
      
                         mat4 inverseTrans = inverse(trans);
-                        vec4 transformedX = vec4(newScene.vertexs[values[0]],1) * inverseTrans;
-                        vec4 transformedY = vec4(newScene.vertexs[values[1]],1) * inverseTrans;
-                        vec4 transformedZ = vec4(newScene.vertexs[values[2]],1) * inverseTrans;
+                        vec4 transformedX = trans * vec4(newScene.vertexs[values[0]],1);
+                        vec4 transformedY = trans * vec4(newScene.vertexs[values[1]],1);
+                        vec4 transformedZ = trans * vec4(newScene.vertexs[values[2]],1);
+
+
+                        //r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                    
                         newScene.objectz.push_back(new Triangle(vec3(transformedX),vec3(transformedY),vec3(transformedZ)));
                         newScene.types.push_back("Triangle");

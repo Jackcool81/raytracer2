@@ -42,7 +42,7 @@ void saveScreenshot(BYTE pixels[], string fname) {
   //3 is for the color value of each pixel
   
 
-  FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
+  FIBITMAP* img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 
   std::cout << "Saving screenshot: " << fname << "\n";
 
