@@ -23,7 +23,9 @@ public:
     vector<Scene*> objectz;
     vector<string> types;
     vector<vec3> vertexs;
-    
+    vector<float> lightposn;
+    vector<float> lightcol;
+    int numlights = 0;
     
     //Calculate the length of your dynamic array.
 
@@ -43,6 +45,9 @@ private:
 
 class Sphere : public Scene {
 public:
+    
+    float ambient[4], diffuse[4], specular[4], emission[4], shininess;
+
     Sphere() {}
     Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin)
         : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
@@ -82,13 +87,11 @@ public:
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
                
-
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
                 plust = glm::distance(r.orig, r.inter);
                 return plust;
             }
             else {
-
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                 minust = glm::distance(r.orig, r.inter);
                 return minust;
@@ -129,6 +132,9 @@ private:
 
 class Triangle : public Scene {
 public:
+
+    float ambient[4], diffuse[4], specular[4], emission[4], shininess;
+
     Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin)
         : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
     {}

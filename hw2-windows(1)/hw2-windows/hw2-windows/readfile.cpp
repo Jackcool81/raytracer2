@@ -95,19 +95,26 @@ void readfile(const char* filename, Scene& newScene)
 
                 // Process the light, add it to database.
                 // Lighting Command
-                if (cmd == "light") {
+                if (cmd == "directional" || cmd == "point") {
                     if (numused == 5) { // No more Lights 
                         cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
                     } else {
-                        validinput = readvals(s, 8, values); // Position/color for lts.
+                        validinput = readvals(s, 6, values); // Position/color for lts.
                         if (validinput) {
-
-                            // YOUR CODE FOR HW 2 HERE. 
-                            // Note that values[0...7] shows the read in values 
-                            // Make use of lightposn[] and lightcolor[] arrays in variables.h
-                            // Those arrays can then be used in display too.  
-
-                            ++numused; 
+                            int buff = numused * 4;
+                            for (i = 0; i < 3; i++) {
+                                newScene.lightposn.push_back(values[i]);
+                            }
+                            for (i = 3; i < 6; i++) {
+                                newScene.lightcol.push_back(values[i]);
+                            }
+                            if (cmd == "directional") {
+                                newScene.lightposn.push_back(0);
+                            }
+                            else {
+                                newScene.lightposn.push_back(1);
+                            }
+                            ++newScene.numlights; 
                         }
                     }
                 }
@@ -159,12 +166,10 @@ void readfile(const char* filename, Scene& newScene)
                 } else if (cmd == "camera") {
                     validinput = readvals(s,10,values); // 10 values eye cen up fov
                     if (validinput) {
-
                         eyeinit = glm::vec3(values[0], values[1], values[2]);
                         center = glm::vec3(values[3], values[4], values[5]);
                         upinit = glm::vec3(values[6], values[7], values[8]);
                         fovy = values[9];
-
                     }
                 }
 
@@ -185,20 +190,42 @@ void readfile(const char* filename, Scene& newScene)
                         vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
                         newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, rayorigin));
                         newScene.types.push_back("Triangle");
+
+                        Triangle* currObj = static_cast<Triangle*>(newScene.objectz.back());
+
+                        for (int i = 0; i++; i < 4) {
+                            currObj->ambient[i] = ambient[i];
+                            currObj->diffuse[i] = diffuse[i];
+                            currObj->emission[i] = emission[i];
+                            currObj->specular[i] = specular[i];
+                            currObj->shininess = shininess;
+                        }
+                        ++numobjects;
                     }
                 }
 
                 else if (cmd == "sphere") {
                     validinput = readvals(s, 4, values); // 10 values eye cen up fov
                     if (validinput) {
-                          
+                        
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
                         newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3],trans, inverseTrans, rayorigin));
-               
+                        Sphere* currObj = static_cast<Sphere*>(newScene.objectz.back());
+                        
+                        for (int i = 0; i++; i < 4) {
+                            currObj->ambient[i] = ambient[i];
+                            currObj->diffuse[i] = diffuse[i];
+                            currObj->emission[i] = emission[i];
+                            currObj->specular[i] = specular[i];
+                            currObj->shininess = shininess;
+                        }
+
                         newScene.types.push_back("Sphere");
-                       
+                        ++numobjects;
+                        //set lighting properties
+                        
                     }
                     
                 }
@@ -206,7 +233,7 @@ void readfile(const char* filename, Scene& newScene)
                 // I've left the code for loading objects in the skeleton, so 
                 // you can get a sense of how this works.  
                 // Also look at demo.txt to get a sense of why things are done this way.
-                else if (cmd == "tri" || cmd == "teapot") {
+               /* else if (cmd == "tri" || cmd == "teapot") {
                     if (numobjects == 5) { // No more objects 
                         cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
                     } else {
@@ -221,11 +248,8 @@ void readfile(const char* filename, Scene& newScene)
                             // Set the object's light properties
                             for (i = 0; i < 4; i++) {
                                 /*
-                                (obj->ambient)[i] = ambient[i]; 
-                                (obj->diffuse)[i] = diffuse[i]; 
-                                (obj->specular)[i] = specular[i]; 
-                                (obj->emission)[i] = emission[i];
-                                */
+                                
+                                
                             }
                             //obj->shininess = shininess; 
 
@@ -239,9 +263,9 @@ void readfile(const char* filename, Scene& newScene)
                                 //obj->type = teapot; 
                             }
                         }
-                        ++numobjects; 
+                      //  ++numobjects; 
                     }
-                }
+                } */
 
                 else if (cmd == "translate") {
                     validinput = readvals(s,3,values); 
