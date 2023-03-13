@@ -14,6 +14,9 @@ using namespace glm;
 using namespace std;
 class Scene {
 public:
+
+    
+
     Scene() {}
 
     float intersection(ray r) {
@@ -45,28 +48,38 @@ private:
 
 class Sphere : public Scene {
 public:
-    
-    float ambient[4], diffuse[4], specular[4], emission[4], shininess;
+
+
 
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin)
+    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin,
+        float amb[4], float dif[4], float emissn[4], float specula[4], float shinines)
         : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
-    {}
+    {
+        for (int i = 0; i < 4; i++) {
+            ambi[i] = amb[i];
+            diffu[i] = dif[i];
+            emiss[i] = emissn[i];
+            specul[i] = specula[i];
+            shini = shinines;
+        }
+
+    }
     //do we need to multiple our orignal center by the modelview then the transform matrix? 
 
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
     float intersection(ray r) {
 
-        
+
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
         vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
 
-        
+
         //compute the hit
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
-        
+
         float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
 
         float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
@@ -76,17 +89,17 @@ public:
             return 0;
         }
 
-        float plust = (-b + sqrt(determine))/(2*a);
+        float plust = (-b + sqrt(determine)) / (2 * a);
         float minust = (-b - sqrt(determine)) / (2 * a);
 
         //find t then
-   
-        
+
+
 
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
-               
+
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
                 plust = glm::distance(r.orig, r.inter);
                 return plust;
@@ -121,23 +134,35 @@ public:
 
         return 0;
     }
-   
+
 private:
     vec3 xyz;
     float rad;
     mat4 trans;
     mat4 invTrans;
     vec3 rayorigin;
+    float ambi[4], diffu[4], specul[4], emiss[4], shini;
 };
+
 
 class Triangle : public Scene {
 public:
 
     float ambient[4], diffuse[4], specular[4], emission[4], shininess;
 
-    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin)
+    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin,float amb[4], float dif[4],
+        float emissn[4], float specula[4], float shinines)
         : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
-    {}
+    {
+        for (int i = 0; i < 4; i++) {
+            ambi[i] = amb[i];
+            diffu[i] = dif[i];
+            emiss[i] = emissn[i];
+            specul[i] = specula[i];
+            shini = shinines;
+        }
+        
+    }
 
     float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
         vec3 normXEdge1 = cross(normal, Triedge1);
@@ -188,6 +213,7 @@ private:
     vec3 C;
     mat4 trans;
     vec3 rayorigin;
+    float ambi[4], diffu[4], specul[4], emiss[4], shini;
 };
 
 class Quad : public Scene {

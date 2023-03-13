@@ -188,19 +188,11 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, rayorigin));
+                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, 
+                                                                rayorigin, ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
-
-                        Triangle* currObj = static_cast<Triangle*>(newScene.objectz.back());
-
-                        for (int i = 0; i++; i < 4) {
-                            currObj->ambient[i] = ambient[i];
-                            currObj->diffuse[i] = diffuse[i];
-                            currObj->emission[i] = emission[i];
-                            currObj->specular[i] = specular[i];
-                            currObj->shininess = shininess;
-                        }
                         ++numobjects;
+                     
                     }
                 }
 
@@ -211,20 +203,12 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3],trans, inverseTrans, rayorigin));
-                        Sphere* currObj = static_cast<Sphere*>(newScene.objectz.back());
-                        
-                        for (int i = 0; i++; i < 4) {
-                            currObj->ambient[i] = ambient[i];
-                            currObj->diffuse[i] = diffuse[i];
-                            currObj->emission[i] = emission[i];
-                            currObj->specular[i] = specular[i];
-                            currObj->shininess = shininess;
-                        }
-
-                        newScene.types.push_back("Sphere");
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3],trans, inverseTrans, rayorigin,
+                                                             ambient, diffuse, emission, specular, shininess));
+                      
                         ++numobjects;
-                        //set lighting properties
+                        newScene.types.push_back("Sphere");
+                      
                         
                     }
                     

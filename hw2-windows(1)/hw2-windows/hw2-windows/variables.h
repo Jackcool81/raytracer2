@@ -56,11 +56,11 @@ EXTERN int numused ;                     // How many lights are used
 
 // Materials (read from file) 
 // With multiple objects, these are colors for each.
-EXTERN GLfloat ambient[4] ; 
-EXTERN GLfloat diffuse[4] ; 
-EXTERN GLfloat specular[4] ; 
-EXTERN GLfloat emission[4] ; 
-EXTERN GLfloat shininess ; 
+EXTERN float ambient[4] ; 
+EXTERN float diffuse[4] ; 
+EXTERN float specular[4] ; 
+EXTERN float emission[4] ; 
+EXTERN float shininess ; 
 
 // For multiple objects, read from a file.  
 //const int maxobjects = 10 ; 

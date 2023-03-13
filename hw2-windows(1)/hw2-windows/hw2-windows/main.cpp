@@ -76,7 +76,6 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
         }
         else {
             t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
-
         }
 
        
