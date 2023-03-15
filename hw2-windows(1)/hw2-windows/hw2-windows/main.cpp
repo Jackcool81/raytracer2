@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     
     Scene newScene = Scene();
     FreeImage_Initialise();
-    readfile(argv[1], newScene);
+   // readfile(argv[1], newScene);
     
 
 
@@ -145,7 +145,15 @@ int main(int argc, char* argv[]) {
     vec3 origin = eyeinit;
     
   
+    Sphere s = Sphere(vec3(0, 0, 0), 1);
+    vec3 dir = glm::normalize(vec3(-1, -1, -1));
+    ray r = ray(vec3(1, 1, 1), dir);
+    s.intersection(r);
 
+    Triangle t = Triangle(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
+    dir = glm::normalize(vec3(-1, -1, -1));
+    r = ray(vec3(1, 1, 1), dir);
+    t.intersection(r);
 
     //fov 
     fovy = fovy * (3.14 / 180.0);

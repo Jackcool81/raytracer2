@@ -52,17 +52,20 @@ public:
 
 
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin,
-        float amb[4], float dif[4], float emissn[4], float specula[4], float shinines)
-        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
+    Sphere(const vec3& center, const float& radius)
+        : xyz(center), rad(radius)
     {
-        for (int i = 0; i < 4; i++) {
+        /*
+        
+          for (int i = 0; i < 4; i++) {
             ambi[i] = amb[i];
             diffu[i] = dif[i];
             emiss[i] = emissn[i];
             specul[i] = specula[i];
             shini = shinines;
         }
+        */
+      
 
     }
     //do we need to multiple our orignal center by the modelview then the transform matrix? 
@@ -72,8 +75,8 @@ public:
     float intersection(ray r) {
 
 
-        //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+        vec3 rayorigin = r.orig;
+        vec3 raydirection = r.dir;
 
 
         //compute the hit
@@ -81,8 +84,8 @@ public:
         float a = dot(raydirection, raydirection);
 
         float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
-
-        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
+        float cdot = dot((rayorigin - newxyz), (rayorigin - newxyz));
+        float c = cdot - (rad * rad);
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
@@ -93,6 +96,8 @@ public:
         float minust = (-b - sqrt(determine)) / (2 * a);
 
         //find t then
+        vec3 inter = r.pos(rayorigin, raydirection, plust);
+        vec3 inter2 = r.pos(rayorigin, raydirection, minust);
 
 
 
@@ -150,17 +155,10 @@ public:
 
     float ambient[4], diffuse[4], specular[4], emission[4], shininess;
 
-    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin,float amb[4], float dif[4],
-        float emissn[4], float specula[4], float shinines)
-        : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
+    Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3)
+        : A(verts), B(verts2), C(verts3)
     {
-        for (int i = 0; i < 4; i++) {
-            ambi[i] = amb[i];
-            diffu[i] = dif[i];
-            emiss[i] = emissn[i];
-            specul[i] = specula[i];
-            shini = shinines;
-        }
+    
         
     }
 
@@ -174,17 +172,21 @@ public:
         
    
     float intersection(ray r) { 
-        vec3 normal = glm::normalize(cross((C - A), (B - A)));
+        vec3 cminusA = C - A;
+        vec3 bminusA = B - A;
+
+        vec3 normal = glm::normalize(cross(cminusA, bminusA));
 
         if (dot(r.dir, normal) == 0) {
             return 0;
         }
 
 
-        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        
+        vec3 raydirection = r.dir;
+        //vec3 aminsRay = A - rayorigin;
+        rayorigin = r.orig;
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
-      
+        
 
         vec3 P = rayorigin + (t * raydirection);
 
