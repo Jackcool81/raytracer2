@@ -59,10 +59,10 @@ void mult(vec3& vector3, double t) {
     vector3 = vec3(vector3.x * t, vector3.y * t, vector3.z * t);
 }
 
-int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
+int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
-   
+    int index;
     int pixel_color[3] = { 0,0,0 };
     float t = 0;
     
@@ -82,20 +82,30 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
        
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
+            index = i;
             min_t = t;
             thetype = newScene.types[i];
-           
-       
-           
         }
 
 
     }
 
     if (thetype == "Sphere") {
-        pixel_color[0] = 0;
-        pixel_color[1] = 255;
-        pixel_color[2] = 255;
+        
+        Sphere* obj = static_cast<Sphere*>(newScene.objectz[index]);
+        unsigned h = FreeImage_GetHeight(map);
+        unsigned w = FreeImage_GetWidth(map);
+        float u = obj->uv.x;
+        float v = obj->uv.y;
+        float textureMapX = (u * w) + .5;
+        float textureMapY = (v * h) + .5;
+        textureMapX = static_cast<int>(textureMapX);
+        textureMapY = static_cast<int>(textureMapY);
+        RGBQUAD color;
+        FreeImage_GetPixelColor(map, textureMapX, h - textureMapY, &color);
+        pixel_color[0] = color.rgbRed;
+        pixel_color[1] = color.rgbGreen;
+        pixel_color[2] = color.rgbBlue;
         //hit = distance;
     }
     else if (thetype == "Triangle") {
@@ -165,6 +175,22 @@ int main(int argc, char* argv[]) {
     int pix = image_width * image_height;
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
+
+
+    FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename("pixarball.jpg");
+    FIBITMAP* bmp = FreeImage_Load(fif, "pixarball.jpg");
+
+    unsigned width = FreeImage_GetWidth(bmp);
+    unsigned height = FreeImage_GetHeight(bmp);
+    RGBQUAD color; 
+    unsigned int x, y;
+    x = 600;
+    y = 600;
+    FreeImage_GetPixelColor(bmp, x, y, &color);
+    printf("%u", color.rgbBlue);
+
+
+
     for (float i = 0; i < image_height; ++i) {
        
         for (float j = 0; j < image_width; ++j) {
@@ -177,7 +203,7 @@ int main(int argc, char* argv[]) {
             ray r(origin, direction);
           
 
-            int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
+            int* pixel_color = FindIntersection(r, newScene.objectz, newScene, bmp);
             //check intersection with the ray and the scene
        
 

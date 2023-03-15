@@ -1,9 +1,10 @@
+
 #pragma once
 #ifndef SCENE_H
 #define SCENE_H
-
 #include <glm/glm.hpp>
 #include "variables.h"
+#include <cmath>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -49,7 +50,7 @@ private:
 class Sphere : public Scene {
 public:
 
-
+    vec2 uv ;
 
     Sphere() {}
     Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin,
@@ -69,6 +70,28 @@ public:
 
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
+
+    void textureColor(vec3 point) {
+       /* float theta = atan2(-(point.z - xyz.z), point.x - xyz.x);
+        const double pi = 3.14159265358979323846;
+        float u = (theta + pi)/2*pi;
+        float phi = acos(-(point.y - xyz.y) / rad);
+        float v = phi / pi;
+        uv.x = u;
+        uv.y = v; */
+        const double pi = 3.14159265358979323846;
+        double v = asin(point.z / rad);
+        double oneEighty = 180;
+        double vDeg = v * (oneEighty / pi);
+        double u = acos(point.x / rad * cos(v));
+        u = u * (oneEighty / pi);
+        double ninety = 90;
+  
+        double threeSixty = 360;
+        uv.x = (u + oneEighty) / threeSixty;
+        uv.y = (vDeg + ninety) / oneEighty;
+    }
+
     float intersection(ray r) {
 
 
@@ -102,11 +125,13 @@ public:
 
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
                 plust = glm::distance(r.orig, r.inter);
+                textureColor(r.inter);
                 return plust;
             }
             else {
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                 minust = glm::distance(r.orig, r.inter);
+                textureColor(r.inter);
                 return minust;
             }
         }
@@ -116,7 +141,7 @@ public:
 
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
-
+            textureColor(r.inter);
             return plust;
         }
 
@@ -124,11 +149,13 @@ public:
         if (plust > 0 && minust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
+            textureColor(r.inter);
             return plust;
         }
         if (minust > 0 && plust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
             minust = glm::distance(r.orig, r.inter);
+            textureColor(r.inter);
             return minust;
         }
 
