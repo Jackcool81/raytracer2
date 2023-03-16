@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cerr << "\nDone.\n";
-    string img = "test.png";
+    string img = "newtest.png";
     saveScreenshot(pixels, img);
     FreeImage_DeInitialise();
   

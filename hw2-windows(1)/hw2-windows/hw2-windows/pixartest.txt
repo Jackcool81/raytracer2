@@ -1,3 +1,7 @@
 size 640 480 
 camera 2 0 2 0 0 0 0 1 0 60
+
+popTransform
+pushTransform 
+rotate 0 1 0 90
 sphere 0 0 0 .75

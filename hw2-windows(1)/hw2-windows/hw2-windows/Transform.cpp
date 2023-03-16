@@ -16,11 +16,14 @@ mat3 Transform::rotate(const float degrees, const vec3& axis)
     float x = a[0];
     float y = a[1];
     float z = a[2];
-    mat3 matrix2 = mat3(x*x, x*y, x*z, x*y, y*y, y*z, x*z, y*z, z*z);
-    mat3 matrix3 = mat3(0, z, -y, -z, 0, x, y, -x, 0);
-    mat3 ret = cosTheta * matrix1 + (1 - cosTheta) * matrix2 + sinTheta * matrix3;
+    mat3 aTime = mat3(x * x, x * y, x * z, y * x, y * y, y * z, z * x, z * y, z * z);
+
+    mat3 aMat = mat3(0, a[2], -a[1], -a[2], 0, a[0], a[1], -a[0], 0);
+
+    mat3 Rot = cosTheta * matrix1 + (1 - cosTheta) * aTime + sinTheta * aMat;
+
     // You will change this return call
-    return ret;
+    return Rot;
 }
 
 void Transform::left(float degrees, vec3& eye, vec3& up) 
