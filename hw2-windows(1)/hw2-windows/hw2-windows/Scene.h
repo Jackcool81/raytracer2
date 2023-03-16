@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "ray.h"
+#include <algorithm>
 using namespace glm;
 using namespace std;
 class Scene {
@@ -71,6 +72,67 @@ public:
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
 
+    float max(float x, float y) {
+        if (x > y) { return x; }
+        return y;
+    }
+
+    vec4 ComputeLight(vec3 direction, vec4 lightcolor, vec3 normal,vec3 halfvec, vec4 mydiffuse, vec4 myspecular, float myshininess) {
+
+        float nDotL = dot(normal, direction);
+        vec4 lambert = mydiffuse * lightcolor * max(nDotL, 0.0);
+
+        float nDotH = dot(normal, halfvec);
+        vec4 phong = myspecular * lightcolor * pow(max(nDotH, 0.0), myshininess);
+
+        vec4 retval = lambert + phong;
+        return retval;
+    }
+
+    vec4 epicLighting(Scene newScene, vec3 mynormal, vec4 myvertex ) {
+        vec4 finalcolor;
+
+        // YOUR CODE FOR HW 2 HERE
+        // A key part is implementation of the fragment shader
+
+        //vec4 newNormal 
+        //taking the vector 3 to a vec 4
+        const vec3 eyepos = vec3(0, 0, 0);
+
+        vec4 newPos = modelview * myvertex;
+        vec3 mypos = vec3(newPos[0] / newPos.w, newPos[1] / newPos.w, newPos[2] / newPos.w); // Dehomogenize current location
+
+        vec3 eyedirn = normalize(eyepos - mypos);
+
+
+        vec3 normal = normalize(mat3(transpose(inverse(modelview))) * mynormal);
+        vec4 col1 = vec4(0, 0, 0, 0);
+       
+   
+
+        for (int i = 0; i < numused; i++) {
+            if (newScene.lightposn[i+3] != 1.0) {
+                //directional light
+                vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
+                vec3 directional = normalize(lightposition); //as specified by the directional light
+                vec3 half1 = normalize(directional + eyedirn);
+                vec4 lightcol = vec4(newScene.lightcol[i], newScene.lightcol[i+1], newScene.lightcol[i+2], newScene.lightcol[i + 3]);
+                col1 = col1 + ComputeLight(directional, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]), shininess);
+            }
+            else {
+                //point light
+                vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
+                vec3 position = lightposition;
+                vec3 point = normalize(position - mypos); //direction as calculated by diff
+                vec3 half1 = normalize(point + eyedirn);
+                vec4 lightcol = vec4(newScene.lightcol[i], newScene.lightcol[i + 1], newScene.lightcol[i + 2], newScene.lightcol[i + 3]);
+
+                col1 = col1 + ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]) , shininess);
+            }
+        }
+        return vec4(ambi[0], ambi[1], ambi[2], ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
+    }
+
     void textureColor(vec3 point) {
        /* float theta = atan2(-(point.z - xyz.z), point.x - xyz.x);
         const double pi = 3.14159265358979323846;
@@ -90,6 +152,76 @@ public:
         double threeSixty = 360;
         uv.x = (u + oneEighty) / threeSixty;
         uv.y = (vDeg + ninety) / oneEighty;
+    }
+
+    vec3 intersectionShadow(ray r) {
+
+
+        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
+        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+
+
+        //compute the hit
+        vec3 newxyz = xyz;
+        float a = dot(raydirection, raydirection);
+
+        float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
+
+        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
+        float determine = (b * b) - (4 * a * c);
+
+        if (determine < 0) {
+            return vec3(-1, -1, -1);
+        }
+
+        float plust = (-b + sqrt(determine)) / (2 * a);
+        float minust = (-b - sqrt(determine)) / (2 * a);
+
+        //find t then
+
+
+
+        //2 real positive
+        if (plust > 0 && minust > 0) {
+            if (plust < minust) {
+
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                //plust = glm::distance(r.orig, r.inter);
+                textureColor(r.inter);
+                //return plust;
+            }
+            else {
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+                minust = glm::distance(r.orig, r.inter);
+                textureColor(r.inter);
+                // return minust;
+            }
+        }
+
+        //if both equal to eachother
+        if (plust == minust) {
+
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
+            textureColor(r.inter);
+            //return plust;
+        }
+
+        //One positive one negative
+        if (plust > 0 && minust < 0) {
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            plust = glm::distance(r.orig, r.inter);
+            textureColor(r.inter);
+            //  return plust;
+        }
+        if (minust > 0 && plust < 0) {
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            minust = glm::distance(r.orig, r.inter);
+            textureColor(r.inter);
+            //return minust;
+        }
+
+        return vec3(-1, -1, -1);
     }
 
     vec3 intersection(ray r) {

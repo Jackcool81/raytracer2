@@ -36,6 +36,8 @@ Grader grader;
 bool allowGrader = false;
 
 
+
+
 void saveScreenshot(BYTE pixels[], string fname) {
  
    //an array of all the pixels in our image, reason why its mulitplied by 
@@ -72,7 +74,7 @@ bool FindShadowIntersection(ray r, Scene newScene) {
         //float t = 0;
 
         if (newScene.types[i] == "Sphere") {
-            vec3 intersection = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            vec3 intersection = static_cast<Sphere*>(newScene.objectz[i])->intersectionShadow(r); //for loop
             if (intersection != vec3(-1, -1, -1)) {
                 return false;
                 t = glm::distance(r.orig, intersection);
@@ -106,6 +108,7 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
     float t = 0;
     vec3 intersection = vec3(0, 0, 0);
     string thetype = "";
+    vector<vec3> intersections;
 
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
@@ -114,7 +117,7 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             intersection = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             if (intersection != vec3(-1, -1, -1)) {
                 t = glm::distance(r.orig, intersection);
-
+                intersections.push_back(intersection);
             }
         }
         else {
@@ -157,10 +160,13 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
       
         bool isntblocked = true;
         for (int i = 0; i < newScene.numlights; i++) {
-            vec3 lightdir = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]) - intersection;
-            lightdir = glm::normalize(lightdir);
-            ray s(intersection, lightdir);
-            isntblocked = FindShadowIntersection(s, newScene);
+            for (int j = 0; j < intersections.size(); j++) {
+                vec3 lightdir = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]) - intersections[i];
+                lightdir = glm::normalize(lightdir);
+                ray s(intersections[i], lightdir);
+                isntblocked = FindShadowIntersection(s, newScene);
+            }
+          
         }
         
         if (isntblocked == true) {
@@ -173,9 +179,7 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             pixel_color[1] = 0;
             pixel_color[2] = 0;
         }
-        pixel_color[0] = 0;
-        pixel_color[1] = 255;
-        pixel_color[2] = 0;
+      
        
         //hit = distance;
     }
