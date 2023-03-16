@@ -164,7 +164,7 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
         }
         
         if (isntblocked == true) {
-            pixel_color[0] = 255;
+            pixel_color[0] = 0;
             pixel_color[1] = 255;
             pixel_color[2] = 0;
         }
@@ -173,6 +173,9 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             pixel_color[1] = 0;
             pixel_color[2] = 0;
         }
+        pixel_color[0] = 0;
+        pixel_color[1] = 255;
+        pixel_color[2] = 0;
        
         //hit = distance;
     }
