@@ -92,7 +92,7 @@ public:
         uv.y = (vDeg + ninety) / oneEighty;
     }
 
-    float intersection(ray r) {
+    vec3 intersection(ray r) {
 
 
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
@@ -109,7 +109,7 @@ public:
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
-            return 0;
+            return vec3(-1,-1,-1);
         }
 
         float plust = (-b + sqrt(determine)) / (2 * a);
@@ -123,43 +123,43 @@ public:
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
 
-                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
-                plust = glm::distance(r.orig, r.inter);
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                //plust = glm::distance(r.orig, r.inter);
                 textureColor(r.inter);
-                return plust;
+                //return plust;
             }
             else {
-                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                 minust = glm::distance(r.orig, r.inter);
                 textureColor(r.inter);
-                return minust;
+               // return minust;
             }
         }
 
         //if both equal to eachother
         if (plust == minust) {
 
-            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
-            return plust;
+            //return plust;
         }
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
-            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
-            return plust;
+          //  return plust;
         }
         if (minust > 0 && plust < 0) {
-            r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
             minust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
-            return minust;
+            //return minust;
         }
 
-        return 0;
+        return vec3(-1,-1,-1);
     }
 
 private:

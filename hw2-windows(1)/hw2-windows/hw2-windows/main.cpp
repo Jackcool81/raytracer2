@@ -59,23 +59,67 @@ void mult(vec3& vector3, double t) {
     vector3 = vec3(vector3.x * t, vector3.y * t, vector3.z * t);
 }
 
-int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map) {
+bool FindShadowIntersection(ray r, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
     int index;
     int pixel_color[3] = { 0,0,0 };
     float t = 0;
-    
+
+    string thetype = "";
+
+    for (int i = 0; i < newScene.objectz.size(); i++) {
+        //float t = 0;
+
+        if (newScene.types[i] == "Sphere") {
+            vec3 intersection = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            if (intersection != vec3(-1, -1, -1)) {
+                return false;
+                t = glm::distance(r.orig, intersection);
+
+            }
+        }
+        else {
+            t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+        }
+
+
+
+        if (t > 0 && t < min_t) {
+            return false;
+            min_primitive = *newScene.objectz[i];
+            index = i;
+            min_t = t;
+            thetype = newScene.types[i];
+        }
+
+
+    }
+    return true;
+}
+
+int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, int maxdepth) {
+    float min_t = 1000000; // number of bounces from read file
+    Scene min_primitive;
+    int index;
+    int pixel_color[3] = { 0,0,0 };
+    float t = 0;
+    vec3 intersection = vec3(0, 0, 0);
     string thetype = "";
 
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
         
         if (newScene.types[i] == "Sphere") {
-            t = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            intersection = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            if (intersection != vec3(-1, -1, -1)) {
+                t = glm::distance(r.orig, intersection);
+
+            }
         }
         else {
-            t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+           // t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            
         }
 
        
@@ -91,8 +135,8 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map) {
     }
 
     if (thetype == "Sphere") {
-        
-        Sphere* obj = static_cast<Sphere*>(newScene.objectz[index]);
+  /*
+    Sphere* obj = static_cast<Sphere*>(newScene.objectz[index]);
         unsigned h = FreeImage_GetHeight(map);
         unsigned w = FreeImage_GetWidth(map);
         float u = obj->uv.x;
@@ -103,9 +147,33 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map) {
         textureMapY = static_cast<int>(textureMapY);
         RGBQUAD color;
         FreeImage_GetPixelColor(map, textureMapX, h - textureMapY, &color);
+
         pixel_color[0] = color.rgbRed;
         pixel_color[1] = color.rgbGreen;
         pixel_color[2] = color.rgbBlue;
+  
+  
+  */
+      
+        bool isntblocked = true;
+        for (int i = 0; i < newScene.numlights; i++) {
+            vec3 lightdir = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]) - intersection;
+            lightdir = glm::normalize(lightdir);
+            ray s(intersection, lightdir);
+            isntblocked = FindShadowIntersection(s, newScene);
+        }
+        
+        if (isntblocked == true) {
+            pixel_color[0] = 255;
+            pixel_color[1] = 255;
+            pixel_color[2] = 0;
+        }
+        else {
+            pixel_color[0] = 255;
+            pixel_color[1] = 0;
+            pixel_color[2] = 0;
+        }
+       
         //hit = distance;
     }
     else if (thetype == "Triangle") {
@@ -203,7 +271,7 @@ int main(int argc, char* argv[]) {
             ray r(origin, direction);
           
 
-            int* pixel_color = FindIntersection(r, newScene.objectz, newScene, bmp);
+            int* pixel_color = FindIntersection(r, newScene.objectz, newScene, bmp, 5);
             //check intersection with the ray and the scene
        
 
