@@ -89,7 +89,7 @@ public:
         return retval;
     }
 
-    vec4 epicLighting(Scene newScene, vec3 mynormal, vec4 myvertex ) {
+    vec4 epicLighting(Scene newScene, vec3 cameraposition, vec3 intersection, float vis ) {
         vec4 finalcolor;
 
         // YOUR CODE FOR HW 2 HERE
@@ -97,15 +97,15 @@ public:
 
         //vec4 newNormal 
         //taking the vector 3 to a vec 4
-        const vec3 eyepos = vec3(0, 0, 0);
+        const vec3 eyepos = cameraposition;
 
-        vec4 newPos = modelview * myvertex;
-        vec3 mypos = vec3(newPos[0] / newPos.w, newPos[1] / newPos.w, newPos[2] / newPos.w); // Dehomogenize current location
+       
+        vec3 mypos = intersection; // Dehomogenize current location
 
         vec3 eyedirn = normalize(eyepos - mypos);
 
 
-        vec3 normal = normalize(mat3(transpose(inverse(modelview))) * mynormal);
+        vec3 normal = normalize(intersection - xyz);
         vec4 col1 = vec4(0, 0, 0, 0);
        
    
@@ -127,10 +127,10 @@ public:
                 vec3 half1 = normalize(point + eyedirn);
                 vec4 lightcol = vec4(newScene.lightcol[i], newScene.lightcol[i + 1], newScene.lightcol[i + 2], newScene.lightcol[i + 3]);
 
-                col1 = col1 + ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]) , shininess);
+                col1 = col1 + (vis * ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]) , shininess));
             }
         }
-        return vec4(ambi[0], ambi[1], ambi[2], ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
+        return vec4(ambi[0] * 255, ambi[1] * 255, ambi[2] * 255, ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
     }
 
     void textureColor(vec3 point) {

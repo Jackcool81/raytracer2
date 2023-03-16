@@ -9,6 +9,8 @@ diffuse 0 0 0
 shininess 20
 specular 0 0 0
 
+ambient 0 1 0
+
 sphere 0 2 0 .3
 
 sphere 0 0 0 .75

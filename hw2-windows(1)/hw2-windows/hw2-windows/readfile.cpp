@@ -126,30 +126,30 @@ void readfile(const char* filename, Scene& newScene)
                 // Note that no transforms/stacks are applied to the colors. 
 
                 else if (cmd == "ambient") {
-                    validinput = readvals(s, 4, values); // colors 
+                    validinput = readvals(s, 3, values); // colors 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             ambient[i] = values[i]; 
                         }
                     }
                 } else if (cmd == "diffuse") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             diffuse[i] = values[i]; 
                         }
                     }
                 } else if (cmd == "specular") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             specular[i] = values[i]; 
                         }
                     }
                 } else if (cmd == "emission") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             emission[i] = values[i]; 
                         }
                     }
