@@ -326,6 +326,11 @@ public:
 
     float ambient[4], diffuse[4], specular[4], emission[4], shininess;
 
+    float max(float x, float y) {
+        if (x > y) { return x; }
+        return y;
+    }
+
     Triangle(const vec3& verts, const vec3& verts2, const vec3& verts3, const mat4& inverseTrans, vec3& origin,float amb[4], float dif[4],
         float emissn[4], float specula[4], float shinines)
         : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
@@ -340,6 +345,68 @@ public:
         
     }
 
+    vec4 ComputeLight(vec3 direction, vec3 lightcolor, vec3 normal, vec3 halfvec, vec4 mydiffuse, vec4 myspecular, float myshininess) {
+
+        float nDotL = dot(normal, direction);
+        vec4 lambert = mydiffuse * vec4(lightcolor, 1) * max(nDotL, 0.0);
+
+        float nDotH = dot(normal, halfvec);
+        vec4 phong = myspecular * vec4(lightcolor, 1) * pow(max(nDotH, 0.0), myshininess);
+
+        vec4 retval = lambert + phong;
+        return retval;
+    }
+
+    vec4 epicLighting(Scene newScene, vec3 cameraposition, vec3 intersection, float vis) {
+        vec4 finalcolor;
+
+        // YOUR CODE FOR HW 2 HERE
+        // A key part is implementation of the fragment shader
+
+        //vec4 newNormal 
+        //taking the vector 3 to a vec 4
+        const vec3 eyepos = cameraposition;
+
+
+        vec3 mypos = intersection; // Dehomogenize current location
+
+        vec3 eyedirn = normalize(eyepos - mypos);
+
+
+        //vec3 normal = normalize(intersection - xyz);
+        vec3 normal = glm::normalize(cross((C - A), (B - A)));
+
+        vec4 col1 = vec4(0, 0, 0, 0);
+
+
+
+        for (int i = 0; i < newScene.numlights; i++) {
+            /*
+             if (newScene.lightposn[i+3] != 1.0) {
+                //directional light
+                vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
+                vec3 directional = normalize(lightposition); //as specified by the directional light
+                vec3 half1 = normalize(directional + eyedirn);
+                vec4 lightcol = vec4(newScene.lightcol[i], newScene.lightcol[i+1], newScene.lightcol[i+2], newScene.lightcol[i + 3]);
+                col1 = col1 + ComputeLight(directional, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]), shininess);
+            }
+            else {
+
+            */
+
+            //point light
+            vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
+            vec3 position = lightposition;
+            vec3 point = normalize(position - mypos); //direction as calculated by diff
+            vec3 half1 = normalize(point + eyedirn);
+            vec3 lightcol = vec3(newScene.lightcol[i], newScene.lightcol[i + 1], newScene.lightcol[i + 2]);
+
+            col1 = col1 + (vis * ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]), shininess));
+
+        }
+        return vec4(ambi[0], ambi[1], ambi[2], ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
+    }
+
     float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
         vec3 normXEdge1 = cross(normal, Triedge1);
 
@@ -347,13 +414,49 @@ public:
 
         return dot(newNormal, intersec) + dot(newNormal, P);
     }
-        
-   
-    float intersection(ray r) { 
+
+    vec3 shadowIntersection(ray r) {
         vec3 normal = glm::normalize(cross((C - A), (B - A)));
 
         if (dot(r.dir, normal) == 0) {
-            return 0;
+            return vec3(-1, -1, -1);
+        }
+
+
+        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
+        rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
+
+        float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
+
+
+        vec3 P = rayorigin + (t * raydirection);
+
+        float beta = SolveBary(normal, C - B, A - C, C, P);
+
+        float gamma = SolveBary(normal, A - C, B - A, A, P);
+
+        float alpha = 1 - beta - gamma;
+
+        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+            float offset = 0.01;
+            normal = normal * offset;
+            r.inter = r.orig + (t * r.dir);
+            //t = glm::distance(r.orig, r.inter);
+            return  r.inter + normal;
+        }
+        else {
+            return vec3(-1, -1, -1);
+        }
+
+
+    }
+        
+   
+    vec3 intersection(ray r) { 
+        vec3 normal = glm::normalize(cross((C - A), (B - A)));
+
+        if (dot(r.dir, normal) == 0) {
+            return vec3(-1,-1,-1);
         }
 
 
@@ -371,12 +474,14 @@ public:
         float alpha = 1 - beta - gamma;
 
         if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            r.inter = r.orig + (t * r.dir);
-            t = glm::distance(r.orig, r.inter);
-            return t;
+            float offset = 0.01;
+            normal = normal * offset;
+            r.inter = r.orig + (t * r.dir) ;
+            //t = glm::distance(r.orig, r.inter);
+            return  r.inter + normal;
         }
         else {
-            return 0;
+            return vec3(-1,-1,-1);
         }
        
 

@@ -61,6 +61,8 @@ void mult(vec3& vector3, double t) {
     vector3 = vec3(vector3.x * t, vector3.y * t, vector3.z * t);
 }
 
+
+
 vec4 FindShadowIntersection(ray r, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
@@ -85,7 +87,15 @@ vec4 FindShadowIntersection(ray r, Scene newScene) {
             }
         }
         else {
-            t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            vec3 intersection = static_cast<Triangle*>(newScene.objectz[i])->shadowIntersection(r); //for loop
+            finalcolor = static_cast<Triangle*>(newScene.objectz[i])->epicLighting(newScene, eyeinit, r.orig, 1); //for loop
+            if (intersection != vec3(-1, -1, -1)) {
+                finalcolor = static_cast<Triangle*>(newScene.objectz[i])->epicLighting(newScene, eyeinit, r.orig, 0); //for loop
+
+                return finalcolor;
+                t = glm::distance(r.orig, intersection);
+
+            }
         }
 
 
@@ -132,6 +142,11 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             }
         }
         else {
+            intersection = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            if (intersection != vec3(-1, -1, -1)) {
+                t = glm::distance(r.orig, intersection);
+                intersections.push_back(intersection);
+            }
            // t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
             
         }
@@ -206,10 +221,20 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
 
 
     else if (thetype == "Triangle") {
-        pixel_color[0] = 255;
-        pixel_color[1] = 0;
-        pixel_color[2] = 255;
-        //hit = distance;
+        bool isntblocked = true;
+        vec4 fincolor = vec4(0, 0, 0, 0);
+        for (int i = 0; i < newScene.numlights; i++) {
+            for (int j = 0; j < intersections.size(); j++) {
+                vec3 lightdir = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]) - intersections[i];
+                lightdir = glm::normalize(lightdir);
+                ray s(intersections[i], lightdir);
+                fincolor = FindShadowIntersection(s, newScene);
+            }
+
+        }
+        pixel_color[0] = clamp(fincolor[0], 1) * 255;
+        pixel_color[1] = clamp(fincolor[1], 1) * 255;
+        pixel_color[2] = clamp(fincolor[2], 1) * 255;
 
     }
    
