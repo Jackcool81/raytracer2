@@ -56,10 +56,10 @@ EXTERN int numused ;                     // How many lights are used
 
 // Materials (read from file) 
 // With multiple objects, these are colors for each.
-EXTERN float ambient[4] ; 
-EXTERN float diffuse[4] ; 
-EXTERN float specular[4] ; 
-EXTERN float emission[4] ; 
+EXTERN vec3 ambient ; 
+EXTERN vec3 diffuse ; 
+EXTERN vec3 specular ; 
+EXTERN vec3 emission ; 
 EXTERN float shininess ; 
 
 // For multiple objects, read from a file.  
