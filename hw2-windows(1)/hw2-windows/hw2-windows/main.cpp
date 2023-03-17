@@ -104,6 +104,13 @@ vec4 FindShadowIntersection(ray r, Scene newScene) {
     return finalcolor;
 }
 
+float clamp(float i, int x) {
+    if (i > x) {
+        return float(x);
+    }
+    return i;
+}
+
 int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, int maxdepth) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
@@ -173,9 +180,9 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             }
           
         }
-        pixel_color[0] = fincolor[0] * 255;
-        pixel_color[1] = fincolor[1] * 255;
-        pixel_color[2] = fincolor[2] * 255;
+        pixel_color[0] = clamp(fincolor[0], 1) * 255;
+        pixel_color[1] = clamp(fincolor[1], 1) * 255;
+        pixel_color[2] = clamp(fincolor[2], 1) * 255;
 
 /*
 
