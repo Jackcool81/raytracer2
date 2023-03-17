@@ -10,8 +10,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "ray.h"
+#include <utility>
+using namespace std;
 using namespace glm;
 using namespace std;
+
 class Scene {
 public:
 
@@ -69,7 +72,7 @@ public:
 
     vec3 center() const { return xyz; }
     float radius() const { return rad; }
-    float intersection(ray r) {
+    pair<float, vec3> intersection(ray r) {
 
 
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
@@ -86,7 +89,7 @@ public:
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
-            return 0;
+            return  pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
         float plust = (-b + sqrt(determine)) / (2 * a);
@@ -102,12 +105,12 @@ public:
 
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
                 plust = glm::distance(r.orig, r.inter);
-                return plust;
+                return  pair<float, vec3>(plust, r.inter);
             }
             else {
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                 minust = glm::distance(r.orig, r.inter);
-                return minust;
+                return  pair<float, vec3>(minust, r.inter);
             }
         }
 
@@ -117,23 +120,25 @@ public:
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
 
-            return plust;
+            return  pair<float, vec3>(plust, r.inter);
         }
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
-            return plust;
+            return  pair<float, vec3>(plust, r.inter);
         }
         if (minust > 0 && plust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
             minust = glm::distance(r.orig, r.inter);
-            return minust;
+            return  pair<float, vec3>(minust, r.inter);
         }
 
-        return 0;
+        return  pair<float, vec3>(0, vec3(-1,-1,-1));
     }
+
+    float ambi[4];
 
 private:
     vec3 xyz;
@@ -141,7 +146,7 @@ private:
     mat4 trans;
     mat4 invTrans;
     vec3 rayorigin;
-    float ambi[4], diffu[4], specul[4], emiss[4], shini;
+    float diffu[4], specul[4], emiss[4], shini;
 };
 
 
@@ -173,11 +178,11 @@ public:
     }
         
    
-    float intersection(ray r) { 
+    pair<float, vec3> intersection(ray r) { 
         vec3 normal = glm::normalize(cross((C - A), (B - A)));
 
         if (dot(r.dir, normal) == 0) {
-            return 0;
+            return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
 
@@ -197,23 +202,24 @@ public:
         if (alpha >= 0 && beta >= 0 && gamma >= 0) {
             r.inter = r.orig + (t * r.dir);
             t = glm::distance(r.orig, r.inter);
-            return t;
+            return pair<float, vec3>(t, r.inter);
+            
         }
         else {
-            return 0;
+            return pair<float, vec3>(0, vec3(-1,-1,-1));
         }
        
 
     }
 
-
+    float ambi[4];
 private:
     vec3 A;
     vec3 B;
     vec3 C;
     mat4 trans;
     vec3 rayorigin;
-    float ambi[4], diffu[4], specul[4], emiss[4], shini;
+    float diffu[4], specul[4], emiss[4], shini;
 };
 
 class Quad : public Scene {

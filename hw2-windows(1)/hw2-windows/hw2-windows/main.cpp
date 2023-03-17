@@ -20,6 +20,8 @@
 #include "Geometry.h"
 #include "ray.h"
 #include "Scene.h"
+#include <tuple>
+#include <utility>
 
 
 
@@ -58,19 +60,19 @@ void init() {
 void mult(vec3& vector3, double t) {
     vector3 = vec3(vector3.x * t, vector3.y * t, vector3.z * t);
 }
-
+/*
 int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
-   
+
     int pixel_color[3] = { 0,0,0 };
     float t = 0;
-    
+
     string thetype = "";
 
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
-        
+
         if (newScene.types[i] == "Sphere") {
             t = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
         }
@@ -78,15 +80,15 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
             t = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
         }
 
-       
-       
+
+
         if (t > 0 && t < min_t) {
             min_primitive = *a[i];
             min_t = t;
             thetype = newScene.types[i];
-           
-       
-           
+
+
+
         }
 
 
@@ -106,18 +108,20 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene) {
 
     }
     return pixel_color;
-  
-    
-   
-   
+
+
+
+
     //loop through all primitives in the scene (passed in parameter)
         //t = the intersection for each primitive (shape) (smallest positive root)
           //t > 0 && t < min_t:
-             //min_primitive = current primitive (the primitive we want to return the one with the smallest root) 
+             //min_primitive = current primitive (the primitive we want to return the one with the smallest root)
              //min_t = t
     //return r.at(min_t);
     //return min_t;
 }
+
+*/
 
 
 void divide(vec3 & vector3, double t) {
@@ -129,6 +133,87 @@ void write_color(int index, BYTE pixels[], int pixel_color[]) {
     pixels[index] = (unsigned char) pixel_color[2];
     pixels[index+1] = (unsigned char) pixel_color[1];
     pixels[index+2] = (unsigned char) pixel_color[0];
+}
+
+tuple<string, Scene*, vec3> intersection(ray r, Scene newScene) {
+    tuple <string, Scene*, vec3> geek;
+   
+    float min_t = 1000000; // number of bounces from read file
+    Scene min_primitive;
+
+    int pixel_color[3] = { 0,0,0 };
+    pair<float, vec3> newpair;
+    pair<float, vec3> bestpair;
+
+    float t = 0;
+
+    string thetype = "";
+
+    for (int i = 0; i < newScene.objectz.size(); i++) {
+        //float t = 0;
+
+        if (newScene.types[i] == "Sphere") {
+            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+        }
+        else {
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+        }
+
+
+
+        if (newpair.first > 0 && newpair.first < min_t) {
+            min_primitive = *newScene.objectz[i];
+            min_t = newpair.first;
+            thetype = newScene.types[i];
+            get<0>(geek) = thetype;
+            get<1>(geek) = &min_primitive;
+            get<2>(geek) = newpair.second;
+
+
+        }
+
+
+    }
+
+    
+  //  return pixel_color;
+
+
+
+    return geek;
+}
+
+vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
+    vec3 color = vec3(0, 0, 0);
+    if (get<0>(stuff) == "Sphere") {
+        color[0] = static_cast<Sphere*>(get<1>(stuff))->ambi[0];
+        color[1] = static_cast<Sphere*>(get<1>(stuff))->ambi[1];
+        color[2] = static_cast<Sphere*>(get<1>(stuff))->ambi[2];
+
+
+    }
+    if (get<0>(stuff) == "Triangle") {
+        color[0] = static_cast<Triangle*>(get<1>(stuff))->ambi[0];
+        color[1] = static_cast<Triangle*>(get<1>(stuff))->ambi[1];
+        color[2] = static_cast<Triangle*>(get<1>(stuff))->ambi[2];
+    }
+
+    if (depth == 0) {
+        return vec3(0, 0, 0); //compute light
+    }
+    for (int i = 0; i < newScene.numlights; i++) {
+        if (get<0>(stuff) == "Sphere") {
+            ray r(get<2>(stuff), vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]));
+            static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+
+        }
+        if (get<0>(stuff) == "Triangle") {
+            ray r(get<2>(stuff), vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]));
+            static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+        }
+
+    }
+    
 }
 
 int main(int argc, char* argv[]) {
@@ -177,13 +262,14 @@ int main(int argc, char* argv[]) {
             ray r(origin, direction);
           
 
-            int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
+           // int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
+
             //check intersection with the ray and the scene
-       
+            
 
             
             //depending on the intersection compute the color 
-            write_color(index, pixels, pixel_color);
+            //write_color(index, pixels, pixel_color);
             index+=3;
         }
     }
