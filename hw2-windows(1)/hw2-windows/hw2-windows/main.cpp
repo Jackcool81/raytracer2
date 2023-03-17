@@ -76,7 +76,6 @@ vec4 FindShadowIntersection(ray r, Scene newScene) {
         if (newScene.types[i] == "Sphere") {
             vec3 intersection = static_cast<Sphere*>(newScene.objectz[i])->intersectionShadow(r); //for loop
             finalcolor = static_cast<Sphere*>(newScene.objectz[i])->epicLighting(newScene, eyeinit, r.orig, 1); //for loop
-
             if (intersection != vec3(-1, -1, -1)) {
                 finalcolor = static_cast<Sphere*>(newScene.objectz[i])->epicLighting(newScene, eyeinit, r.orig, 0); //for loop
 
@@ -174,11 +173,12 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             }
           
         }
-        pixel_color[0] = fincolor[0];
-        pixel_color[1] = fincolor[1];
-        pixel_color[2] = fincolor[2];
+        pixel_color[0] = fincolor[0] * 255;
+        pixel_color[1] = fincolor[1] * 255;
+        pixel_color[2] = fincolor[2] * 255;
 
 /*
+
  if (isntblocked == true) {
 
             pixel_color[0] = 0;
@@ -190,12 +190,14 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
             pixel_color[1] = 0;
             pixel_color[2] = 0;
         }
-*/
-       
-      
-       
+
+
+         */
+
         //hit = distance;
     }
+
+
     else if (thetype == "Triangle") {
         pixel_color[0] = 255;
         pixel_color[1] = 0;
@@ -203,6 +205,7 @@ int* FindIntersection(ray r, vector<Scene*> a, Scene newScene, FIBITMAP* map, in
         //hit = distance;
 
     }
+   
     return pixel_color;
   
     

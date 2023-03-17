@@ -77,13 +77,13 @@ public:
         return y;
     }
 
-    vec4 ComputeLight(vec3 direction, vec4 lightcolor, vec3 normal,vec3 halfvec, vec4 mydiffuse, vec4 myspecular, float myshininess) {
+    vec4 ComputeLight(vec3 direction, vec3 lightcolor, vec3 normal,vec3 halfvec, vec4 mydiffuse, vec4 myspecular, float myshininess) {
 
         float nDotL = dot(normal, direction);
-        vec4 lambert = mydiffuse * lightcolor * max(nDotL, 0.0);
+        vec4 lambert = mydiffuse * vec4(lightcolor, 1) * max(nDotL, 0.0);
 
         float nDotH = dot(normal, halfvec);
-        vec4 phong = myspecular * lightcolor * pow(max(nDotH, 0.0), myshininess);
+        vec4 phong = myspecular * vec4(lightcolor, 1) * pow(max(nDotH, 0.0), myshininess);
 
         vec4 retval = lambert + phong;
         return retval;
@@ -110,8 +110,9 @@ public:
        
    
 
-        for (int i = 0; i < numused; i++) {
-            if (newScene.lightposn[i+3] != 1.0) {
+        for (int i = 0; i < newScene.numlights; i++) {
+            /*
+             if (newScene.lightposn[i+3] != 1.0) {
                 //directional light
                 vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
                 vec3 directional = normalize(lightposition); //as specified by the directional light
@@ -120,17 +121,20 @@ public:
                 col1 = col1 + ComputeLight(directional, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]), shininess);
             }
             else {
+            
+            */
+           
                 //point light
-                vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
-                vec3 position = lightposition;
-                vec3 point = normalize(position - mypos); //direction as calculated by diff
-                vec3 half1 = normalize(point + eyedirn);
-                vec4 lightcol = vec4(newScene.lightcol[i], newScene.lightcol[i + 1], newScene.lightcol[i + 2], newScene.lightcol[i + 3]);
+            vec3 lightposition = vec3(newScene.lightposn[i], newScene.lightposn[i + 1], newScene.lightposn[i + 2]);
+            vec3 position = lightposition;
+            vec3 point = normalize(position - mypos); //direction as calculated by diff
+            vec3 half1 = normalize(point + eyedirn);
+            vec3 lightcol = vec3(newScene.lightcol[i], newScene.lightcol[i + 1], newScene.lightcol[i + 2]);
 
-                col1 = col1 + (vis * ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]) , shininess));
-            }
+            col1 = col1 + (vis * ComputeLight(point, lightcol, normal, half1, vec4(diffu[0], diffu[1], diffu[2], diffu[3]), vec4(specul[0], specul[1], specul[2], specul[3]) , shininess));
+            
         }
-        return vec4(ambi[0] * 255, ambi[1] * 255, ambi[2] * 255, ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
+        return vec4(ambi[0], ambi[1], ambi[2], ambi[3]) + vec4(emiss[0], emiss[1], emiss[0], emiss[0]) + col1;
     }
 
     void textureColor(vec3 point) {
@@ -250,18 +254,23 @@ public:
         //find t then
 
 
-
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
+                vec3 normal = normalize(vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) - xyz);
+                float offset = 0.01;
+                normal = normal * offset;
 
-                return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) + normal;
                 //plust = glm::distance(r.orig, r.inter);
                 textureColor(r.inter);
                 //return plust;
             }
             else {
-                return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+                vec3 normal = normalize(vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) - xyz);
+                float offset = 0.01;
+                normal = normal * offset;
+                return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1)) + normal;
                 minust = glm::distance(r.orig, r.inter);
                 textureColor(r.inter);
                // return minust;
@@ -270,8 +279,10 @@ public:
 
         //if both equal to eachother
         if (plust == minust) {
-
-            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            vec3 normal = normalize(vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) - xyz);
+            float offset = 0.01;
+            normal = normal * offset;
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) + normal;
             plust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
             //return plust;
@@ -279,13 +290,19 @@ public:
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
-            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            vec3 normal = normalize(vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) - xyz);
+            float offset = 0.01;
+            normal = normal * offset;
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) + normal;
             plust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
           //  return plust;
         }
         if (minust > 0 && plust < 0) {
-            return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            vec3 normal = normalize(vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1)) - xyz);
+            float offset = 0.01;
+            normal = normal * offset;
+            return vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1)) + normal;
             minust = glm::distance(r.orig, r.inter);
             textureColor(r.inter);
             //return minust;
