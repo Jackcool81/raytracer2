@@ -196,11 +196,12 @@ public:
     vec3 ambi, diffu, specul, emiss;
     float shini;
     mat4 trans;
+    mat4 invTrans;
 private:
     vec3 xyz;
     float rad;
   
-    mat4 invTrans;
+   
     vec3 rayorigin;
     
 };
@@ -267,15 +268,18 @@ public:
         
    
     pair<float, vec3> intersection(ray r) { 
-        vec3 normal = glm::normalize(cross((C - A), (B - A)));
+        //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
 
-        if (dot(r.dir, normal) == 0) {
+        vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
+      //  vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
+        vec3 raydirection = vec3(trans * vec4(r.dir, 0));
+        if (dot(raydirection, normal) == 0) {
             return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
 
-        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        
+        vec3 orig = vec3(trans * vec4(r.orig, 1));
+        rayorigin = orig;
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
 
@@ -289,6 +293,7 @@ public:
 
         if (alpha >= 0 && beta >= 0 && gamma >= 0) {
             r.inter = r.orig + (t * r.dir);
+            //r.inter = rayorigin + (t * raydirection);
             t = glm::distance(r.orig, r.inter);
             return pair<float, vec3>(t, r.inter);
             
@@ -305,9 +310,10 @@ public:
     vec3 A;
     vec3 B;
     vec3 C;
+    mat4 trans;
 private:
    
-    mat4 trans;
+    
     vec3 rayorigin;
    
 };
