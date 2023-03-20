@@ -41,5 +41,6 @@ vertex +1 -1 0
 vertex +1 +1 0
 vertex -1 +1 0
 
-tri 0 1 2
+
 tri 0 2 3
+tri 0 1 2

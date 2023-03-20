@@ -147,19 +147,25 @@ int visibility(ray r, Scene newScene) {
     int blocked = 1;
     float blockers = 1.0;
     pair<float, vec3> newpair;
-    for (int i = 0; i < newScene.objectz.size(); i++) {
+    int i;
+    /*
+     for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             
         }
         if (newScene.types[i] == "Triangle") {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->findIntersection(r);
             
         }
+        if (newpair.first > 0) {
+            return 0;
+        }
     }
-    if (newpair.first > 0) {
-        return 0;
-    }
+    */
+   
+   
+   
     return 1;
     //return blocked;
 }
