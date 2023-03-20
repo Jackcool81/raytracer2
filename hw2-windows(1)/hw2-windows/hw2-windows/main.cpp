@@ -353,6 +353,14 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
         ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
      
+        //possiblities the problem is we are getting to much shadow
+        //visibibly is always returning 0
+        //as is our intersection methods
+        // SHADOWS ARE NOT CORRECT
+        //could be the ray we pass into intersection, could be the intersection method handling the ray
+        //debug both
+
+
         if (visibility(r, newScene) == 1) {
             color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
         }
