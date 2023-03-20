@@ -145,17 +145,23 @@ void write_color(int index, BYTE pixels[], vec3 pixel_color) {
 
 int visibility(ray r, Scene newScene) {
     int blocked = 1;
+    float blockers = 1.0;
+    pair<float, vec3> newpair;
     for (int i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
-            blocked = static_cast<Sphere*>(newScene.objectz[i])->shadow(r);
-            if (blocked == 0) { return blocked; }
+            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            
         }
         if (newScene.types[i] == "Triangle") {
-            blocked = static_cast<Triangle*>(newScene.objectz[i])->shadow(r);
-            if (blocked == 0) { return blocked; }
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            
         }
     }
-    return blocked;
+    if (newpair.first > 0) {
+        return 0;
+    }
+    return 1;
+    //return blocked;
 }
 
 tuple<string, Scene*, vec3> intersection(ray r, Scene newScene) {
@@ -268,8 +274,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         float offset = 0.3;
         
        
-        normal = normalize(cross((C - A), (B - A)));
-        intersection += (normal * offset);
+        normal = normalize(cross((B - A), (C - A)));
+        //intersection += (normal * offset);
      
 
     }
