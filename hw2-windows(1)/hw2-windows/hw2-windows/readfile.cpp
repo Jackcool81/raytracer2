@@ -36,10 +36,8 @@ using namespace std;
 #include "variables.h" 
 #include "readfile.h"
 
-
 // You may not need to use the following two functions, but it is provided
 // here for convenience
-
 // The function below applies the appropriate transform to a 4-vector
 void matransform(stack<mat4> &transfstack, GLfloat* values) 
 {
@@ -96,9 +94,7 @@ void readfile(const char* filename, Scene& newScene)
                 // Process the light, add it to database.
                 // Lighting Command
                 if (cmd == "directional" || cmd == "point") {
-                    if (numused == 5) { // No more Lights 
-                        cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
-                    } else {
+
                         validinput = readvals(s, 6, values); // Position/color for lts.
                         if (validinput) {
                             int buff = numused * 4;
@@ -117,7 +113,7 @@ void readfile(const char* filename, Scene& newScene)
                             ++newScene.numlights; 
                         }
                     }
-                }
+                
 
                 // Material Commands 
                 // Ambient, diffuse, specular, shininess properties for each object.
@@ -187,8 +183,8 @@ void readfile(const char* filename, Scene& newScene)
                         //Triangle t = 
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
-                        vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, 
+                        vec3 rayorigin = eyeinit;
+                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], trans, inverseTrans, 
                                                                 rayorigin, ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;
@@ -202,16 +198,12 @@ void readfile(const char* filename, Scene& newScene)
                         
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
-                        vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3],trans, inverseTrans, rayorigin,
+                        vec3 rayorigin = eyeinit;
+                        newScene.objectz.push_back(new Sphere(vec3(values[0], values[1], values[2]), values[3], trans, inverseTrans, rayorigin,
                                                              ambient, diffuse, emission, specular, shininess));
-                      
                         ++numobjects;
-                        newScene.types.push_back("Sphere");
-                      
-                        
-                    }
-                    
+                        newScene.types.push_back("Sphere");                   
+                    }                  
                 }
 
                 // I've left the code for loading objects in the skeleton, so 

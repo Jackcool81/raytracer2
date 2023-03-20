@@ -6,7 +6,6 @@
 // This is the basic include file for the global variables in the program.  
 // Since all files need access to it, we define EXTERN as either blank or 
 // extern, depending on if included in the main program or not.  
-
 #ifdef MAINPROGRAM 
 #define EXTERN 
 #else 
@@ -35,7 +34,7 @@ EXTERN float fovy ;
 
 #endif 
 
-
+//tuple<float,vec3,mat4,mat4> intersection(ray r);
 EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user 
 EXTERN GLuint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices

@@ -10,7 +10,7 @@
 # primitives.  In any case, getting the geometry right is the point of this 
 # exercise, not the shading.
 
-size 640 480 
+size 100 100
 
 # There are 3 camera positions.  Make images for all 3
 
