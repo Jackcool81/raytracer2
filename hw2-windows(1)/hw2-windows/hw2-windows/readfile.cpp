@@ -188,7 +188,15 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Triangle(newScene.vertexs[values[0]], newScene.vertexs[values[1]], newScene.vertexs[values[2]], inverseTrans, 
+                        mat3 matrix = mat3(trans);
+                        vec3 A = newScene.vertexs[values[0]];
+                        vec3 B = newScene.vertexs[values[1]];
+                        vec3 C = newScene.vertexs[values[2]];
+
+                        vec3 AP = matrix * newScene.vertexs[values[0]];
+                        vec3 BP = matrix * newScene.vertexs[values[1]];
+                        vec3 CP = matrix * newScene.vertexs[values[2]];
+                        newScene.objectz.push_back(new Triangle(A, B, C, AP, BP, CP, inverseTrans, 
                                                                 rayorigin, ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;

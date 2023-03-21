@@ -214,9 +214,9 @@ public:
 
 
 
-    Triangle(vec3& verts, vec3& verts2, vec3& verts3, const mat4& inverseTrans, vec3& origin, vec3 amb, vec3 dif,
+    Triangle(vec3& verts, vec3& verts2, vec3& verts3, vec3& vertsp, vec3& verts2p, vec3& verts3p, const mat4& inverseTrans, vec3& origin, vec3 amb, vec3 dif,
         vec3 emissn, vec3 specula, float shinines)
-        : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
+        : A(verts), B(verts2), C(verts3), Ap(vertsp), Bp(verts2p), Cp(verts3p), trans(inverseTrans), rayorigin(origin)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
@@ -448,6 +448,10 @@ public:
     vec3 A;
     vec3 B;
     vec3 C;
+
+    vec3 Ap;
+    vec3 Bp;
+    vec3 Cp;
     mat4 trans;
 private:
    

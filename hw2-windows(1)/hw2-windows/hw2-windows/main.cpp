@@ -325,7 +325,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
              float offset = 0.01;
              
         normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1)) - sphereCenter);
-        newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1));
+       // newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1));
         //intersection += (normal * offset);
         mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
         normal = normalize(matrix * normal);
@@ -342,18 +342,18 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         diff = static_cast<Triangle*>(get<1>(stuff))->diffu;
         specular = static_cast<Triangle*>(get<1>(stuff))->specul;
         shiny = static_cast<Triangle*>(get<1>(stuff))->shini;
-        vec3 A = static_cast<Triangle*>(get<1>(stuff))->A; //getting the world coord center of the sphere    
-        vec3 B = static_cast<Triangle*>(get<1>(stuff))->B; //getting the world coord center of the sphere    
-        vec3 C = static_cast<Triangle*>(get<1>(stuff))->C; //getting the world coord center of the sphere    
+        vec3 A = static_cast<Triangle*>(get<1>(stuff))->Ap; //getting the world coord center of the sphere    
+        vec3 B = static_cast<Triangle*>(get<1>(stuff))->Bp; //getting the world coord center of the sphere    
+        vec3 C = static_cast<Triangle*>(get<1>(stuff))->Cp; //getting the world coord center of the sphere    
         float offset = 0.01;
-        mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
-        A = matrix * A;
-        B = matrix * B;
-        C = matrix * C;
+       // mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
+      //  A = matrix * A;
+      //  B = matrix * B;
+      //  C = matrix * C;
         normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
        // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
-        newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(inter, 1));
+        //newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(inter, 1));
 
        // intersection += (normal * offset);
      
@@ -474,6 +474,7 @@ int main(int argc, char* argv[]) {
     BYTE* pixels = new BYTE[3 * pix];
     int index = 0;
     vec3 pixel_color = vec3(0, 0, 0);
+    int pixcount = 0;
     for (float i = 0; i < image_height; ++i) {
        
         for (float j = 0; j < image_width; ++j) {
@@ -490,6 +491,9 @@ int main(int argc, char* argv[]) {
             if (i == 197 && j == 382) {
                pixel_color = vec3(0, 0, 0);
             }
+            cout << pixcount;
+            cout << '\n';
+            pixcount += 1;
              //check intersection with the ray and the scene
             tuple<string, Scene*, vec3, int> a = intersection(r, newScene); //eye ray check
             if (get<0>(a) != "") {
