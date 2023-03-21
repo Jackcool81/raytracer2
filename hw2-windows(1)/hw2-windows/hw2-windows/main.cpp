@@ -212,7 +212,7 @@ int visibility(ray r, Scene newScene, hitInfo& hi) {
     //return blocked;
 }
 
-bool intersection(ray r, Scene newScene, hitInfo& hit) {
+hitInfo intersection(ray r, Scene newScene) {
  //   tuple <string, Scene*, vec3, int> geek ("", NULL, vec3(0,0,0), -1);
    
     float min_t = 1000000.0f; // number of bounces from read file
@@ -221,27 +221,37 @@ bool intersection(ray r, Scene newScene, hitInfo& hit) {
    // int pixel_color[3] = { 0,0,0 };
   //  pair<float, vec3> newpair(-1, vec3(-1,-1,-1));
     //pair<float, vec3> bestpair;
-    bool hitter = false;
+    hitInfo hitter;
     //float t = 0;
     bool finalhit = false;
     string thetype = "";
-    hitInfo minHit;
+    hitInfo hit;
 
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
 
         if (newScene.types[i] == "Sphere") {
-            hitter = static_cast<Sphere*>(newScene.objectz[i])->intersection(r, hit);
+            hitter = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
         }
         else {
-            hitter = static_cast<Triangle*>(newScene.objectz[i])->intersection(r, hit);
+            hitter = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
         }
 
-        if (hitter) {
-            if (hit.t > 0 && hit.t < min_t) {
-                min_t = hit.t;
-                minHit = hit;
-                finalhit = hitter;
+        if (hitter.ishit) {
+            if (hitter.t > 0.001 && hitter.t < min_t) {
+                min_t = hitter.t;
+                hit.inter = hitter.inter;
+                hit.n = hitter.n;
+                hit.prim = hitter.prim;
+                hit.t = hitter.t;
+                hit.type = hitter.type;
+                hit.ishit = hitter.ishit;
+
+
+
+
+
+                finalhit = hitter.ishit;
             }
         }
       
@@ -266,9 +276,9 @@ bool intersection(ray r, Scene newScene, hitInfo& hit) {
     
   //  return pixel_color;
 
-    hit = minHit;
-
-    return finalhit;
+  //  hit = minHit;
+    
+    return hit;
 }
 
 float max(float x, float y) {
@@ -548,8 +558,8 @@ int main(int argc, char* argv[]) {
             }
             hitInfo hit;
              //check intersection with the ray and the scene
-            bool hitInter = intersection(r, newScene, hit); //eye ray check
-            if (hitInter) {
+            hit = intersection(r, newScene); //eye ray check
+            if (hit.ishit) {
                 
                pixel_color = pixcolor(hit, 5,  newScene, r); //recursively raytrace the pixel color
             

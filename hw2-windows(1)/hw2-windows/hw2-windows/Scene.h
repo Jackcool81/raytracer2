@@ -56,6 +56,7 @@ struct hitInfo {
     vec3 inter;
     string type = "";
     Scene* prim;
+    bool ishit = false;
 };
 
 class Sphere : public Scene {
@@ -135,9 +136,9 @@ public:
     vec3 emission() const { return emiss; }
 
     float radius() const { return rad; }
-    bool intersection(ray r, hitInfo& hit) {
+    hitInfo intersection(ray r) {
 
-
+        hitInfo hit;
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
         //vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
         vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
@@ -154,7 +155,7 @@ public:
         float determine = (b * b) - (4 * a * c);
 
         if (determine < 0) {
-            return false;
+            return hit;
            // return  pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
@@ -168,61 +169,71 @@ public:
         //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
+                r.inter = r.pos(rayorigin, raydirection, plust);
                 hit.n = normalize(r.inter - xyz);
 
-                r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                r.inter = vec3(trans * vec4(r.inter, 1));
                 plust = glm::distance(r.orig, r.inter);
                 hit.inter = r.inter;
                 hit.t = plust;
                 
-                hit.n = vec3(transposeInv * vec4(hit.n, 1));
+                hit.n = normalize(mat3(transposeInv) * hit.n);
                 hit.type = "Sphere";
                 hit.prim = this;
-                return true;
+                hit.ishit = true;
+                return hit;
                 //return  pair<float, vec3>(plust, r.inter);
             }
             else {
+                r.inter = r.pos(rayorigin, raydirection, plust);
                 hit.n = normalize(r.inter - xyz);
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
                 minust = glm::distance(r.orig, r.inter);
                 hit.inter = r.inter;
                 hit.t = minust;
                 
-                hit.n = vec3(transposeInv * vec4(hit.n, 1));
+                hit.n = normalize(mat3(transposeInv) * hit.n);
                 hit.type = "Sphere";
                 hit.prim = this;
-                return true;
+                hit.ishit = true;
+                return hit;
             }
         }
 
         //if both equal to eachother
         if (plust == minust) {
+            r.inter = r.pos(rayorigin, raydirection, plust);
             hit.n = normalize(r.inter - xyz);
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
             hit.inter = r.inter;
             hit.t = plust;
             
-            hit.n = vec3(transposeInv * vec4(hit.n, 1));
+            hit.n = normalize(mat3(transposeInv) * hit.n);
             hit.type = "Sphere";
             hit.prim = this;
-            return true;
+            hit.ishit = true;
+
+            return hit;
         }
 
         //One positive one negative
         if (plust > 0 && minust < 0) {
+            r.inter = r.pos(rayorigin, raydirection, plust);
             hit.n = normalize(r.inter - xyz);
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
             plust = glm::distance(r.orig, r.inter);
             hit.inter = r.inter;
             hit.t = plust;
             
-            hit.n = vec3(transposeInv * vec4(hit.n, 1));
+            hit.n = normalize(mat3(transposeInv) * hit.n);
             hit.type = "Sphere";
             hit.prim = this;
-            return true;
+            hit.ishit = true;
+            return hit;
         }
         if (minust > 0 && plust < 0) {
+            r.inter = r.pos(rayorigin, raydirection, plust);
             hit.n = normalize(r.inter - xyz);
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
             minust = glm::distance(r.orig, r.inter);
@@ -232,10 +243,11 @@ public:
             hit.n = vec3(transposeInv * vec4(hit.n, 1));
             hit.type = "Sphere";
             hit.prim = this;
-            return true;
+            hit.ishit = true;
+            return hit;
         }
 
-        return false;
+        return hit;
     }
 
     
@@ -450,14 +462,14 @@ public:
 
 
    
-        bool intersection(ray r, hitInfo& hit) {
+    hitInfo intersection(ray r) {
         //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-
+        hitInfo hitnew;
         vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
         vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
         if (dot(raydirection, normal) == 0) {
-            return false;
+            return hitnew;
             //return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
@@ -479,18 +491,19 @@ public:
             r.inter = r.orig + (t * r.dir);
             //r.inter = rayorigin + (t * raydirection);
          
-            hit.inter = vec3(trans * vec4(r.inter, 1));
+            hitnew.inter = vec3(trans * vec4(r.inter, 1));
             t = glm::distance(r.orig, r.inter);
-            hit.t = t;
-            hit.n = vec3(transposeInv * vec4(normal, 1));
-            hit.type = "Triangle";
-            hit.prim = this;
-            return true;
+            hitnew.t = t;
+            hitnew.n = vec3(transposeInv * vec4(normal, 1));
+            hitnew.type = "Triangle";
+            hitnew.prim = this;
+            hitnew.ishit = true;
+            return hitnew;
             //return pair<float, vec3>(t, r.inter);
             
         }
         else {
-            return false;
+            return hitnew;
             //return pair<float, vec3>(0, vec3(-1,-1,-1));
         }
        
