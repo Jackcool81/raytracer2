@@ -143,11 +143,12 @@ void write_color(int index, BYTE pixels[], vec3 pixel_color) {
     pixels[index+2] = (unsigned char)pixel_color[0];
 }
 
-int visibility(ray r, Scene newScene, int index) {
+int visibility(ray r, Scene newScene, hitInfo& hi) {
     int blocked = 1;
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
+    hitInfo hit;
     /*
       for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
@@ -169,22 +170,23 @@ int visibility(ray r, Scene newScene, int index) {
     }
     
     */
+    bool hitter = false;
+    bool finalhit = false;
+    /*
+        for (i = 0; i < newScene.objectz.size(); i++) {
       
-    for (i = 0; i < newScene.objectz.size(); i++) {
-        if (i == index) {
-            continue;
-        }
+      
         if (newScene.types[i] == "Sphere") {
             
-            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            hitter = static_cast<Sphere*>(newScene.objectz[i])->intersection(r, hit);
 
         }
 
         if (newpair.first > 0.0101) {
             return 0;
         }
-        if (newScene.types[i] == "Triangle") {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+        if (newScene.types[i] == "Triangle") { //this function returns a number when it shouldn't
+            hitter = static_cast<Triangle*>(newScene.objectz[i])->intersection(r, hit);
 
         }
 
@@ -194,6 +196,9 @@ int visibility(ray r, Scene newScene, int index) {
            
         }
     }
+    
+    */
+
     
     
    
@@ -207,33 +212,41 @@ int visibility(ray r, Scene newScene, int index) {
     //return blocked;
 }
 
-tuple<string, Scene*, vec3, int> intersection(ray r, Scene newScene) {
-    tuple <string, Scene*, vec3, int> geek ("", NULL, vec3(0,0,0), -1);
+bool intersection(ray r, Scene newScene, hitInfo& hit) {
+ //   tuple <string, Scene*, vec3, int> geek ("", NULL, vec3(0,0,0), -1);
    
-    float min_t = 1000000; // number of bounces from read file
+    float min_t = 1000000.0f; // number of bounces from read file
     Scene min_primitive;
 
-    int pixel_color[3] = { 0,0,0 };
-    pair<float, vec3> newpair;
-    pair<float, vec3> bestpair;
-
-    float t = 0;
-
+   // int pixel_color[3] = { 0,0,0 };
+  //  pair<float, vec3> newpair(-1, vec3(-1,-1,-1));
+    //pair<float, vec3> bestpair;
+    bool hitter = false;
+    //float t = 0;
+    bool finalhit = false;
     string thetype = "";
+    hitInfo minHit;
 
     for (int i = 0; i < newScene.objectz.size(); i++) {
         //float t = 0;
 
         if (newScene.types[i] == "Sphere") {
-            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+            hitter = static_cast<Sphere*>(newScene.objectz[i])->intersection(r, hit);
         }
         else {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
+            hitter = static_cast<Triangle*>(newScene.objectz[i])->intersection(r, hit);
         }
 
-
-
-        if (newpair.first > 0 && newpair.first < min_t) {
+        if (hitter) {
+            if (hit.t > 0 && hit.t < min_t) {
+                min_t = hit.t;
+                minHit = hit;
+                finalhit = hitter;
+            }
+        }
+      
+/*
+ if (newpair.first > 0 && newpair.first < min_t) { //Distance check
             min_primitive = *newScene.objectz[i];
             min_t = newpair.first;
             thetype = newScene.types[i];
@@ -244,6 +257,8 @@ tuple<string, Scene*, vec3, int> intersection(ray r, Scene newScene) {
 
 
         }
+*/
+     
 
 
     }
@@ -251,9 +266,9 @@ tuple<string, Scene*, vec3, int> intersection(ray r, Scene newScene) {
     
   //  return pixel_color;
 
+    hit = minHit;
 
-
-    return geek;
+    return finalhit;
 }
 
 float max(float x, float y) {
@@ -299,9 +314,10 @@ vec3 normalChecker(tuple<string, Scene*, vec3> stuff, bool light, vec3 lightdir)
 }
 
 
-vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene) {
+vec3 pixcolor(hitInfo hit, int depth, Scene newScene, ray reflected) {
     vec3 color = vec3(0, 0, 0);
-    vec3 intersection = get<2>(stuff);
+    //vec3 inter = get<2>(stuff);
+    vec3 inter = vec3(0,0,0);
     int name = 0;
     vec3 diff = vec3(0,0,0);
     vec3 specular = vec3(0, 0, 0);
@@ -310,7 +326,28 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
     float shiny = 0.0;
     vec3 normal;
     vec3 newIntersection;
-    //Adding ambi and emiss
+    if (hit.type == "Sphere") {
+        ambient = static_cast<Sphere*>(hit.prim)->ambi;
+        emiss = static_cast<Sphere*>(hit.prim)->emiss;
+        diff = static_cast<Sphere*>(hit.prim)->diffu;
+        specular = static_cast<Sphere*>(hit.prim)->specul;
+        shiny = static_cast<Sphere*>(hit.prim)->shini;
+        normal = hit.n;
+        inter = hit.inter;
+    }
+    if (hit.type == "Triangle") {
+        ambient = static_cast<Triangle*>(hit.prim)->ambi;
+        emiss = static_cast<Triangle*>(hit.prim)->emiss;
+        diff = static_cast<Triangle*>(hit.prim)->diffu;
+        specular = static_cast<Triangle*>(hit.prim)->specul;
+        shiny = static_cast<Triangle*>(hit.prim)->shini;
+        normal = hit.n;
+        inter = hit.inter;
+    }
+
+    
+    /*
+    //GETS ALL THE MATERIAL INFORMATION AND THE NORMAL
     if (get<0>(stuff) == "Sphere") {
         name = 1;
         ambient = static_cast<Sphere*>(get<1>(stuff))->ambi;
@@ -324,8 +361,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
         
              float offset = 0.01;
              
-        normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(intersection, 1)) - sphereCenter);
-        newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(intersection, 1));
+        //normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1)) - sphereCenter);
+        newIntersection = inter;
         //intersection += (normal * offset);
         mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
         normal = normalize(matrix * normal);
@@ -336,15 +373,15 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
         //normal = normalize(intersection - sphereCenter); //finding the normal
        
     }
-    if (get<0>(stuff) == "Triangle") {
+      if (get<0>(stuff) == "Triangle") {
         ambient = static_cast<Triangle*>(get<1>(stuff))->ambi;
         emiss = static_cast<Triangle*>(get<1>(stuff))->emiss;
         diff = static_cast<Triangle*>(get<1>(stuff))->diffu;
         specular = static_cast<Triangle*>(get<1>(stuff))->specul;
         shiny = static_cast<Triangle*>(get<1>(stuff))->shini;
-        vec3 A = static_cast<Triangle*>(get<1>(stuff))->A; //getting the world coord center of the sphere    
-        vec3 B = static_cast<Triangle*>(get<1>(stuff))->B; //getting the world coord center of the sphere    
-        vec3 C = static_cast<Triangle*>(get<1>(stuff))->C; //getting the world coord center of the sphere    
+        vec3 A = static_cast<Triangle*>(get<1>(stuff))->A; //getting the world coord center of the sphere
+        vec3 B = static_cast<Triangle*>(get<1>(stuff))->B; //getting the world coord center of the sphere
+        vec3 C = static_cast<Triangle*>(get<1>(stuff))->C; //getting the world coord center of the sphere
         float offset = 0.01;
         mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
         A = matrix * A;
@@ -353,26 +390,25 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
         normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
        // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
-        newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(intersection, 1));
+        newIntersection = inter;
 
        // intersection += (normal * offset);
-     
+
 
     }
+    */
+    
+  
    
-    vec3 eyedirn = normalize(eyeinit - intersection); //direction to the eye
+    vec3 eyedirn = normalize(eyeinit - inter); //direction to the eye
 
     if (depth == 0) {
         return color; //compute light
     }
-    //The spencer check list
-    //ASK YASH WHY TRIANGLE IS NOT COMPUTING LIGHT??? aND nO SHADOWS test with scene1
-    //ASK YASH WHY OUR SPHERE IS FUCKED UP???? 
-    //Ask about reflections
-    //what does attentutaion do does it make it look better?
     
-
-    for (int i = 0; i < newScene.numlights; i++) {
+    //This is for the shadow rays
+    
+      for (int i = 0; i < newScene.numlights; i++) {
         vec3 lightdir;
         vec3 lightcol;
         vec3 half1;
@@ -387,8 +423,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
             vec3 lightpos = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
             
             //use old intersectino if this fuck
-            lightdir = normalize(lightpos - intersection); //find the light direction 
-            intersection += (.01f * lightdir);
+            lightdir = normalize(lightpos - inter); //find the light direction 
+            inter += (.01f * lightdir);
           
             lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
             half1 = normalize(lightdir + eyedirn); //finding the half vector 
@@ -398,7 +434,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
        
        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
         //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
-        ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
+        ray r(inter, lightdir); //cast a ray from the point of intersection, in the light direction
 
         //possiblities the problem is we are getting to much shadow
         //visibibly is always returning 0
@@ -408,18 +444,48 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene)
         //debug both
 
 
-        if (visibility(r, newScene, get<3>(stuff)) == 1) {
-
+        if (visibility(r, newScene, hit) == 1) {
+            
+           
+            
             color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
         }
+         }
+    
+  
         
        
       
 
+   
+    //vec3 vpar = glm::dot(normal , glm::normalize(reflected.dir)) * normal;
+    //vec3 reflecdir = glm::normalize(reflected.dir - (float)1.5 * vpar);
+  //  reflected.dir = glm::normalize(reflected.dir);
+   // vec3 reflect = (dot(reflected.dir, normal) * normal) * 2.0f;
+    //point = intersection + offset? + normal
+    //eye direction - from intersection
+    //normal
+    //ray reflec(newIntersection + (0.01f * normal), reflecdir);
+    
+    
+    
+    
+    //This is for recursive rays
+    /*
+     vec3 directional = -eyedirn + 2.0f * dot(eyedirn, normal) * normal;
+    ray reflec(newIntersection + (normal * 0.01f), glm::normalize(directional));
+     bool hitInter = intersection(reflec, newScene, hit);
+    if (hitInter) {
+        color += (specular * pixcolor(hit, depth - 1, newScene, reflec));
+
     }
-     color += ambient + emiss;
+    */
+
+   
+    color += ambient + emiss;
+   
     //looping through the lights
- 
+    
     
     
     
@@ -477,13 +543,15 @@ int main(int argc, char* argv[]) {
 
             pixel_color = vec3(0, 0, 0);
             // int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
-            if (i == 197 && j == 382) {
+            if (i == 50 &&j == 10) {
                pixel_color = vec3(0, 0, 0);
             }
+            hitInfo hit;
              //check intersection with the ray and the scene
-            tuple<string, Scene*, vec3, int> a = intersection(r, newScene); //eye ray check
-            if (get<0>(a) != "") {
-               pixel_color = pixcolor(a, 5, newScene); //recursively raytrace the pixel color
+            bool hitInter = intersection(r, newScene, hit); //eye ray check
+            if (hitInter) {
+                
+               pixel_color = pixcolor(hit, 5,  newScene, r); //recursively raytrace the pixel color
             
             }
            
