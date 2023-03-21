@@ -15,206 +15,156 @@ using namespace std;
 using namespace glm;
 using namespace std;
 
+struct hitInfo {
+    float t;
+    vec3 n;
+    vec3 inter;
+    string type;
+    Shape* shape;
+};
 class Scene {
 public:
-
-    
-
     Scene() {}
-
-    float intersection(ray r) {
-        
-        return 0;
-    };
-    vector<Scene*> objectz;
-    vector<string> types;
+    vector<Shape*> objectz;
     vector<vec3> vertexs;
     vector<float> lightposn;
     vector<float> lightcol;
+    string type;
     int numlights = 0;
-    
-    //Calculate the length of your dynamic array.
-
-//Allocate the dynamic array as a pointer to a pointer to Technics - this is like
-//Making an array of pointers each holding some Technics heirarchy object.
- 
-
-    
-
-    
-
-private:
+};
+class Shape {
+public:
+    Shape() {}
+    virtual bool intersection(ray r, hitInfo& hit, float tmin, float tmax) const = 0;
+    virtual bool shadow(ray r) const = 0;
+    vector<Shape*> objectz;
+    vector<string> types;
+    vector<vec3> vertexs;
+    vec3 xyz;
+    vector<float> lightposn;
+    vector<float> lightcol;
+    int numlights = 0;
+    vec3 ambi, diffu, specul, emiss;
+    float shini;
+    private:
     int test = 0;
 };
 
-
-
-class Sphere : public Scene {
+class Sphere : public Shape {
 public:
 
-
-
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin,
+    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, const mat4& invtranspose, vec3 invOrigin,
         vec3 amb, vec3 dif, vec3 emissn, vec3 specula, float shinines)
-        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
+        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin), invTranspose(invtranspose)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
             diffu[i] = dif[i];
             emiss[i] = emissn[i];
-            specul[i] = specula[i];
-            
+            specul[i] = specula[i];     
         }
         shini = shinines;
     }
-    //do we need to multiple our orignal center by the modelview then the transform matrix? 
-
-    int shadow(ray r) {
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
-
-
-        //compute the hit
-        vec3 newxyz = xyz;
-        float a = dot(raydirection, raydirection);
-
-        float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
-
-        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
-        float determine = (b * b) - (4 * a * c);
-
-        if (determine < 0) {
-            return 1; //its visible
-        }
-
-        float plust = (-b + sqrt(determine)) / (2 * a);
-        float minust = (-b - sqrt(determine)) / (2 * a);
-
-        if (plust > 0 && minust > 0) {
-            if (plust < minust) {
-
-                return 0;
-            }
-            else {
-                return 0;
-            }
-        }
-
-        //if both equal to eachother
-        if (plust == minust) {
-
-            return 0;
-        }
-
-        //One positive one negative
-        if (plust > 0 && minust < 0) {
-            return 0;
-        }
-        if (minust > 0 && plust < 0) {
-            return 0;
-        }
-
-        return 1;
-    }
-
     vec3 center() const { return xyz; }
-
     vec3 ambient() const { return ambi; }
     vec3 diffuse() const { return diffu; }
     vec3 specular() const { return specul; }
     vec3 emission() const { return emiss; }
-
     float radius() const { return rad; }
-    pair<float, vec3> intersection(ray r) {
 
-
-        //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        //vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+    bool intersection(ray r, hitInfo& hit, float tmin, float tmax) {
         vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
-
         rayorigin = vec3(invTrans * vec4(r.orig, 1));
-       // rayorigin = r.orig;
-        //compute the hit
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
-
         float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
-
         float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
         float determine = (b * b) - (4 * a * c);
-
         if (determine < 0) {
-            return  pair<float, vec3>(0, vec3(-1, -1, -1));
+            return false;
         }
-
         float plust = (-b + sqrt(determine)) / (2 * a);
         float minust = (-b - sqrt(determine)) / (2 * a);
-
-        //find t then
-
-
-
-        //2 real positive
         if (plust > 0 && minust > 0) {
             if (plust < minust) {
-
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+                hit.inter = r.inter;
                 plust = glm::distance(r.orig, r.inter);
-                return  pair<float, vec3>(plust, r.inter);
+                hit.t = plust;
+                hit.n = normalize(r.inter - xyz);
+                hit.n = vec3(invTranspose * vec4(hit.n,1));
+                hit.inter = r.inter;
+                hit.type = "Sphere";
+                hit.shape = this;
+                return true;
             }
             else {
                 r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+                hit.inter = r.inter;
                 minust = glm::distance(r.orig, r.inter);
-                return  pair<float, vec3>(minust, r.inter);
+                hit.n = vec3(invTranspose * vec4(hit.n, 1));
+                hit.t = minust;
+                hit.n = normalize(r.inter - xyz);
+                hit.n = vec3(invTranspose * vec4(hit.n, 1));
+                hit.inter = r.inter;
+                hit.type = "Sphere";
+                hit.shape = this;
+                return  true;
             }
         }
-
-        //if both equal to eachother
         if (plust == minust) {
-
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            hit.inter = r.inter;
             plust = glm::distance(r.orig, r.inter);
-
-            return  pair<float, vec3>(plust, r.inter);
+            hit.t = plust;
+            hit.n = normalize(r.inter - xyz);
+            hit.type = "Sphere";
+            hit.shape = this;
+            return  true;
         }
-
-        //One positive one negative
         if (plust > 0 && minust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, plust), 1));
+            hit.inter = r.inter;
             plust = glm::distance(r.orig, r.inter);
-            return  pair<float, vec3>(plust, r.inter);
+            hit.t = plust;
+            hit.n = normalize(r.inter - xyz);
+            hit.type = "Sphere";
+            hit.shape = this;
+            return  true;
         }
         if (minust > 0 && plust < 0) {
             r.inter = vec3(trans * vec4(r.pos(rayorigin, raydirection, minust), 1));
+            hit.inter = r.inter;
             minust = glm::distance(r.orig, r.inter);
-            return  pair<float, vec3>(minust, r.inter);
+            hit.t = minust;
+            hit.n = normalize(r.inter - xyz);
+            hit.type = "Sphere";
+            hit.shape = this;
+            return  true;
         }
-
-        return  pair<float, vec3>(0, vec3(-1,-1,-1));
+        return false;
     }
 
-    
     vec3 ambi, diffu, specul, emiss;
     float shini;
     mat4 trans;
     mat4 invTrans;
+    mat4 invTranspose;
+
 private:
+
     vec3 xyz;
     float rad;
-  
-   
     vec3 rayorigin;
     
 };
 
 
-class Triangle : public Scene {
+class Triangle : public Shape {
 public:
 
-
-
-    Triangle(vec3& verts, vec3& verts2, vec3& verts3, const mat3& trans, vec3 amb, vec3 dif,
+    Triangle(vec3 verts, vec3 verts2, vec3 verts3, mat4 trans, vec3 amb, vec3 dif,
         vec3 emissn, vec3 specula, float shinines)
         : A(verts), B(verts2), C(verts3), trans(trans)
     {
@@ -222,102 +172,27 @@ public:
             ambi[i] = amb[i];
             diffu[i] = dif[i];
             emiss[i] = emissn[i];
-            specul[i] = specula[i];
-            
+            specul[i] = specula[i];     
         }
         shini = shinines;
     }
 
-    float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
-        vec3 normXEdge1 = cross(normal, Triedge1);
-
-        vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
-
-        return dot(newNormal, intersec) + dot(newNormal, P);
-    }
-
-    int shadow(ray r) {
-        vec3 normal = glm::normalize(cross((C - A), (B - A)));
-
-        if (dot(r.dir, normal) == 0) {
-            return 1;
-        }
-
-
-        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        vec3 orig = vec3(inverse(trans) * vec4(r.orig, 1));
-
-        float t = dot(normal, (A - orig)) / dot(raydirection, normal);
-
-
-        vec3 P = orig + (t * raydirection);
-
-        float beta = SolveBary(normal, C - B, A - C, C, P);
-
-        float gamma = SolveBary(normal, A - C, B - A, A, P);
-
-        float alpha = 1 - beta - gamma;
-
-        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            return 0;
-        }
-        else {
-            return 1;
-        }
-
-
-    }
-        
-
-
-    pair<float, vec3> isHit(ray r) {
-
-        vec3 normal = glm::cross((B - A), (C - A));
-        normal = glm::normalize(normal);
-        float t = glm::dot(normal, (r.orig - A)) / glm::dot(normal, r.dir);
-        t = -1.0 * t;
-        if (t < 0) {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-
-        vec3 position = r.orig + t * r.dir;
-
-        if (((glm::dot(glm::cross((B - A), (position - A)), normal)) >= 0) &&
-            ((glm::dot(glm::cross((C - B), (position - B)), normal)) >= 0) &&
-            ((glm::dot(glm::cross((A - C), (position - C)), normal)) >= 0))
-        {
-
-            //return Intersection(position, normal, this);
-            return pair<float, vec3>(glm::distance(r.orig, position), position);
-        }
-        else {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-    }
-
-    pair<float, vec3> newIntersection(ray r) {
+    bool intersection(ray r, hitInfo& hit, float tmin, float tmax) {
         float ax = A[0];
         float ay = A[1]; 
         float az = A[2];
-
         float bx = B[0];
         float by = B[1];
         float bz = B[2];
-
         float cx = C[0];
         float cy = C[1];
         float cz = C[2];
-
         float dx = r.dir[0];
         float dy = r.dir[1];
         float dz = r.dir[2];
-
         float ox = r.orig[0];
         float oy = r.orig[1];
         float oz = r.orig[2];
-
-
-
         float a = ax - bx;
         float d = ax - cx;
         float g = dx;
@@ -327,40 +202,28 @@ public:
         float c = az - bz;
         float f = az - cz;
         float i = dz;
-
         float j = ax - ox;
         float k = ay - oy;
         float l = az - oz;
-        
         float ei = e * i;
-
         float hf = h * f;
-
         float gf = g * f;
-
         float di = d * i;
-
         float dh = d * h;
-
         float eg = e * g;
-
         float ak = a * k;
-
         float jb = j * b;
-
         float jc = j * c;
-
         float al = a * l;
-
         float bl = b * l;
-
         float kc = k * c;
-
         float m = a * (ei - hf) + b * (gf - di) + c * (dh - eg);
 
         float beta = j * (ei - hf) + k * (gf - di) + l * (dh - eg);
         beta = beta / m;
-
+        if (beta <= 0 || beta >= 1) {
+            return false;
+        }
         float gamma = i * (ak - jb) + h * (jc - al) + g * (bl - kc);
         gamma = gamma / m;
 
@@ -368,168 +231,25 @@ public:
         t = t / m;
         t = -1.0f * t;
 
-
-        vec3 n = normalize(cross(C - A, B - A ));
-
-        
-        if (beta > 0 && gamma > 0 && beta + gamma < 1) {
-            r.inter = r.orig + (t * r.dir);
-            //r.inter = rayorigin + (t * raydirection);
-            t = glm::distance(r.orig, r.inter);
-            return pair<float, vec3>(t, r.inter);
-
+        vec3 n = normalize(cross(B - A,C - A));
+        if (gamma <= 0 || beta + gamma >= 1) {
+            return false;
         }
+        if(t < tmin && t > tmax){
+            r.inter = r.orig + (t * r.dir);
+            t = glm::distance(r.orig, r.inter);
+            hit.t = t;
+            hit.n = normalize(cross(B - A, C - A));
+            hit.inter = r.inter;
+            hit.type = "Triangle";
+            hit.shape = this;
+            return true;
+        }
+ 
         else {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
+            return false;
         }
     }
-
-    //, float &minDist
-    pair<float, vec3> findIntersection(const ray &ray) const
-    {
-        
-
-        vec3 newA = vec3(inverse(trans) * vec4(A,1)) ;
-        vec3 newB = vec3(inverse(trans) * vec4(B, 1));
-        vec3 newC = vec3(inverse(trans) * vec4(C, 1));
-        vec3 normal = normalize(cross((newB - newA), (newC - newA)));
-    const glm::vec3 BminusA = newB - newA;
-    const glm::vec3 CminusA = newC - newA;
-    const float t = (dot(newA, normal) - glm::dot(ray.orig, normal)) / glm::dot(ray.dir, normal);
-    //if (t > 0 && t < minDist) {
-        const glm::vec3 P = ray.orig + t * ray.dir;
-        const glm::vec3 PminusA = P - newA;
-        // solve equations: P-A=a(B-A)+b(C-A)
-        // TODO: refactor this shit
-        float PminusA_1;
-        float PminusA_2;
-        float BminusA_1;
-        float BminusA_2;
-        float CminusA_1;
-        float CminusA_2;
-        bool ready = false;
-        if (!ready && BminusA.x != 0.0) {
-            PminusA_1 = PminusA.x;
-            BminusA_1 = BminusA.x;
-            CminusA_1 = CminusA.x;
-            if (CminusA.y != 0.0) {
-                PminusA_2 = PminusA.y;
-                BminusA_2 = BminusA.y;
-                CminusA_2 = CminusA.y;
-                ready = true;
-            } else if (CminusA.z != 0.0) {
-                PminusA_2 = PminusA.z;
-                BminusA_2 = BminusA.z;
-                CminusA_2 = CminusA.z;
-                ready = true;
-            }
-        }
-        if (!ready && BminusA.y != 0) {
-            PminusA_1 = PminusA.y;
-            BminusA_1 = BminusA.y;
-            CminusA_1 = CminusA.y;
-            if (CminusA.x != 0.0) {
-                PminusA_2 = PminusA.x;
-                BminusA_2 = BminusA.x;
-                CminusA_2 = CminusA.x;
-                ready = true;
-            } else if (CminusA.z != 0.0) {
-                PminusA_2 = PminusA.z;
-                BminusA_2 = BminusA.z;
-                CminusA_2 = CminusA.z;
-                ready = true;
-            }
-        }
-        if (!ready && BminusA.z != 0) {
-            PminusA_1 = PminusA.z;
-            BminusA_1 = BminusA.z;
-            CminusA_1 = CminusA.z;
-            if (CminusA.x != 0.0) {
-                PminusA_2 = PminusA.x;
-                BminusA_2 = BminusA.x;
-                CminusA_2 = CminusA.x;
-                ready = true;
-            } else if (CminusA.y != 0.0) {
-                PminusA_2 = PminusA.y;
-                BminusA_2 = BminusA.y;
-                CminusA_2 = CminusA.y;
-                ready = true;
-            }
-        }
-        if (!ready) {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-        const float b1 = (PminusA_2 * BminusA_1 - PminusA_1 * BminusA_2);
-        const float b2 = (CminusA_2 * BminusA_1 - CminusA_1 * BminusA_2);
-        const float b = b1 / b2;
-        const float a = (PminusA_1 - b * CminusA_1) / BminusA_1;
-        
-        if ((0 <= a) && (a <= 1)
-                && (0 <= b) && (b <= 1)
-                && (a + b <= 1)) {
-            //minDist = t;
-
-         
-            /*
-            
-            
-                result.t = t;
-            result.point = P;
-            result.normal = normal;
-            result.primitive = this;
-            result.empty = false;
-            
-            */
-        
-            return pair<float, vec3>(glm::distance(ray.orig, P) , P);
-        }
-    
-    return pair<float, vec3>(0, vec3(-1, -1, -1));
-}
-
-
-
-
-
-   
-    pair<float, vec3> intersection(ray r) { 
-        //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-
-        vec3 normal = normalize(cross((B - A), (C - A)));
-        //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        vec3 raydirection = r.dir;
-        if (dot(raydirection, normal) == 0) {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-
-
-        //vec3 orig = vec3(trans * vec4(r.orig, 1));
-        rayorigin = r.orig;
-        float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
-      
-
-        vec3 P = rayorigin + (t * raydirection);
-
-        float beta = SolveBary(normal, C - B, A - C, C, P);
-
-        float gamma = SolveBary(normal, A - C, B - A, A, P);
-
-        float alpha = 1 - beta - gamma;
-
-        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            r.inter = r.orig + (t * r.dir);
-            //r.inter = rayorigin + (t * raydirection);
-            t = glm::distance(r.orig, r.inter);
-            return pair<float, vec3>(t, r.inter);
-            
-        }
-        else {
-            return pair<float, vec3>(0, vec3(-1,-1,-1));
-        }
-       
-
-    }
-
     vec3 ambi, diffu, specul, emiss;
     float shini;
     vec3 A;
@@ -537,20 +257,7 @@ public:
     vec3 C;
     mat4 trans;
 private:
-   
-    
-    vec3 rayorigin;
-   
-};
-
-class Quad : public Scene {
-public:
-    Quad() {}
-
-    float intersection(ray r) { return 0; }
-
-private:
-
+    vec3 rayorigin; 
 };
 
 #endif

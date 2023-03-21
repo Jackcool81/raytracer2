@@ -184,12 +184,16 @@ void readfile(const char* filename, Scene& newScene)
                     validinput = readvals(s, 3, values); // 10 values eye cen up fov
                     if (validinput) {
                        
-                        //Triangle t = 
-                        mat3 trans = mat3(transfstack.top());
-                       // mat3 inverseTrans = mat3(inverse(trans));
+                        mat4 trans = transfstack.top();
+                        vec4 olda = trans * vec4(newScene.vertexs[values[0]],1);
+                        vec4 oldb = trans * vec4(newScene.vertexs[values[1]],1);
+                        vec4 oldc = trans * vec4(newScene.vertexs[values[1]],1);
 
-                        //vec3 rayorigin = vec3(trans * vec4(eyeinit, 1));
-                        newScene.objectz.push_back(new Triangle(trans * newScene.vertexs[values[0]], trans * newScene.vertexs[values[1]], trans * newScene.vertexs[values[2]], trans,
+                        vec3 a = vec3(olda);
+                        vec3 b = vec3(oldb);
+                        vec3 c = vec3(oldc);
+                       
+                        newScene.objectz.push_back(new Triangle(a, b, c, trans,
                                                                 ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;
@@ -215,42 +219,6 @@ void readfile(const char* filename, Scene& newScene)
                     
                 }
 
-                // I've left the code for loading objects in the skeleton, so 
-                // you can get a sense of how this works.  
-                // Also look at demo.txt to get a sense of why things are done this way.
-               /* else if (cmd == "tri" || cmd == "teapot") {
-                    if (numobjects == 5) { // No more objects 
-                        cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
-                    } else {
-                        validinput = readvals(s, 1, values); 
-                        if (validinput) {
-                           // object * obj = &(objects[numobjects]); 
-                            
-                            
-
-                            //obj->size = values[0]; 
-
-                            // Set the object's light properties
-                            for (i = 0; i < 4; i++) {
-                                /*
-                                
-                                
-                            }
-                            //obj->shininess = shininess; 
-
-                            // Set the object's transform
-                            //obj->transform = transfstack.top(); 
-
-                            // Set the object's type
-                            if (cmd == "cube") {
-                                //obj->type = cube; 
-                            } else if (cmd == "teapot") {
-                                //obj->type = teapot; 
-                            }
-                        }
-                      //  ++numobjects; 
-                    }
-                } */
 
                 else if (cmd == "translate") {
                     validinput = readvals(s,3,values); 
