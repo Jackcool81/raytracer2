@@ -148,11 +148,14 @@ int visibility(ray r, Scene newScene) {
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
-    
-     for (i = 0; i < newScene.objectz.size(); i++) {
+    /*
+        for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             
+        }
+        if (newpair.first > 0.0101) {
+            return 0;
         }
         if (newScene.types[i] == "Triangle") {
             newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
@@ -162,6 +165,13 @@ int visibility(ray r, Scene newScene) {
             return 0;
         }
     }
+    
+    */
+  
+    
+   
+    
+    
     
    
    
@@ -286,7 +296,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         normal = normalize(intersection - sphereCenter);
 
        // intersection += (normal * offset);
-        normal = vec3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans) * vec4(normal,1));
+        mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
+        normal = matrix * normal;
         
         //normal = normalize(intersection - sphereCenter);
        
@@ -304,11 +315,13 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         vec3 B = static_cast<Triangle*>(get<1>(stuff))->B; //getting the world coord center of the sphere    
         vec3 C = static_cast<Triangle*>(get<1>(stuff))->C; //getting the world coord center of the sphere    
         float offset = 0.01;
-        
-       
+        mat3 matrix = mat3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans));
+        A = matrix * A;
+        B = matrix * B;
+        C = matrix * C;
         normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-        normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
+       // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
        
        // intersection += (normal * offset);
      
