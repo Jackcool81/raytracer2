@@ -148,21 +148,21 @@ int visibility(ray r, Scene newScene) {
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
-    /*
+    
      for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             
         }
         if (newScene.types[i] == "Triangle") {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->findIntersection(r);
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
             
         }
-        if (newpair.first > 0) {
+        if (newpair.first > 0.0101) {
             return 0;
         }
     }
-    */
+    
    
    
    
@@ -308,7 +308,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
        
         normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-        //normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
+        normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
        
        // intersection += (normal * offset);
      
@@ -342,7 +342,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
             vec3 lightpos = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
             
             lightdir = normalize(lightpos - intersection); //find the light direction 
-            intersection += .3f * lightdir;
+            intersection += .01f * lightdir;
           
             lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
             half1 = normalize(lightdir + eyedirn); //finding the half vector 
@@ -362,6 +362,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
 
 
         if (visibility(r, newScene) == 1) {
+
             color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
         }
         

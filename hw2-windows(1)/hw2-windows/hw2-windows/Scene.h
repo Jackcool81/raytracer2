@@ -131,7 +131,7 @@ public:
 
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
         vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
-
+        rayorigin = vec3(invTrans * vec4(r.orig, 1));
 
         //compute the hit
         vec3 newxyz = xyz;
