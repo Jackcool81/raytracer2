@@ -169,8 +169,8 @@ int visibility(ray r, Scene newScene, int index) {
     }
     
     */
-      
-    for (i = 0; i < newScene.objectz.size(); i++) {
+      /*
+       for (i = 0; i < newScene.objectz.size(); i++) {
         if (i == index) {
             continue;
         }
@@ -194,6 +194,9 @@ int visibility(ray r, Scene newScene, int index) {
            
         }
     }
+      
+      */
+   
     
     
    
@@ -342,15 +345,15 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         diff = static_cast<Triangle*>(get<1>(stuff))->diffu;
         specular = static_cast<Triangle*>(get<1>(stuff))->specul;
         shiny = static_cast<Triangle*>(get<1>(stuff))->shini;
-        vec3 A = static_cast<Triangle*>(get<1>(stuff))->Ap; //getting the world coord center of the sphere    
-        vec3 B = static_cast<Triangle*>(get<1>(stuff))->Bp; //getting the world coord center of the sphere    
-        vec3 C = static_cast<Triangle*>(get<1>(stuff))->Cp; //getting the world coord center of the sphere    
+        //vec3 A = static_cast<Triangle*>(get<1>(stuff))->Ap; //getting the world coord center of the sphere    
+       // vec3 B = static_cast<Triangle*>(get<1>(stuff))->Bp; //getting the world coord center of the sphere    
+       // vec3 C = static_cast<Triangle*>(get<1>(stuff))->Cp; //getting the world coord center of the sphere    
         float offset = 0.01;
        // mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
       //  A = matrix * A;
       //  B = matrix * B;
       //  C = matrix * C;
-        normal = normalize(cross(normalize(B - A), normalize(C - A)));
+        normal = static_cast<Triangle*>(get<1>(stuff))->inverseNormal;
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
        // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
         //newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(inter, 1));

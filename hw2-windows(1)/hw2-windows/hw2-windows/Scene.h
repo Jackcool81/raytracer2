@@ -215,9 +215,9 @@ public:
 
 
 
-    Triangle(vec3& verts, vec3& verts2, vec3& verts3, vec3& vertsp, vec3& verts2p, vec3& verts3p, const mat4& inverseTrans, vec3& origin, vec3 amb, vec3 dif,
+    Triangle(vec3& verts, vec3& verts2, vec3& verts3, vec3& vertsp, vec3& verts2p, vec3& verts3p, vec3& normal, vec3& normalInvTrans, const mat4& inverseTrans, vec3 amb, vec3 dif,
         vec3 emissn, vec3 specula, float shinines)
-        : A(verts), B(verts2), C(verts3), Ap(vertsp), Bp(verts2p), Cp(verts3p), trans(inverseTrans), rayorigin(origin)
+        : A(verts), B(verts2), C(verts3), Ap(vertsp), Bp(verts2p), Cp(verts3p), normal(normal), inverseNormal(normalInvTrans), trans(inverseTrans)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
@@ -229,187 +229,18 @@ public:
         shini = shinines;
     }
 
-    float SolveBary(vec3 normal, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
-        vec3 normXEdge1 = cross(normal, Triedge1);
+    float SolveBary(vec3 normal2, vec3 Triedge1, vec3 Triedge2, vec3 P, vec3 intersec) {
+        vec3 normXEdge1 = cross(normal2, Triedge1);
 
         vec3 newNormal = -(normXEdge1 / dot(normXEdge1, Triedge2));
 
         return dot(newNormal, intersec) + dot(newNormal, P);
     }
 
-    int shadow(ray r) {
-        vec3 normal = glm::normalize(cross((C - A), (B - A)));
-
-        if (dot(r.dir, normal) == 0) {
-            return 1;
-        }
-
-
-        vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        vec3 orig = vec3(inverse(trans) * vec4(r.orig, 1));
-
-        float t = dot(normal, (A - orig)) / dot(raydirection, normal);
-
-
-        vec3 P = orig + (t * raydirection);
-
-        float beta = SolveBary(normal, C - B, A - C, C, P);
-
-        float gamma = SolveBary(normal, A - C, B - A, A, P);
-
-        float alpha = 1 - beta - gamma;
-
-        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            return 0;
-        }
-        else {
-            return 1;
-        }
-
-
-    }
-        
-
-
-    pair<float, vec3> isHit(ray r) {
-
-        vec3 normal = glm::cross((B - A), (C - A));
-        normal = glm::normalize(normal);
-        float t = glm::dot(normal, (r.orig - A)) / glm::dot(normal, r.dir);
-        t = -1.0 * t;
-        if (t < 0) {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-
-        vec3 position = r.orig + t * r.dir;
-
-        if (((glm::dot(glm::cross((B - A), (position - A)), normal)) >= 0) &&
-            ((glm::dot(glm::cross((C - B), (position - B)), normal)) >= 0) &&
-            ((glm::dot(glm::cross((A - C), (position - C)), normal)) >= 0))
-        {
-
-            //return Intersection(position, normal, this);
-            return pair<float, vec3>(glm::distance(r.orig, position), position);
-        }
-        else {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-    }
-
-
-
-    //, float &minDist
-    pair<float, vec3> findIntersection(const ray &ray) const
-    {
-        
-
-        vec3 newA = vec3(inverse(trans) * vec4(A,1)) ;
-        vec3 newB = vec3(inverse(trans) * vec4(B, 1));
-        vec3 newC = vec3(inverse(trans) * vec4(C, 1));
-        vec3 normal = normalize(cross((newB - newA), (newC - newA)));
-    const glm::vec3 BminusA = newB - newA;
-    const glm::vec3 CminusA = newC - newA;
-    const float t = (dot(newA, normal) - glm::dot(ray.orig, normal)) / glm::dot(ray.dir, normal);
-    //if (t > 0 && t < minDist) {
-        const glm::vec3 P = ray.orig + t * ray.dir;
-        const glm::vec3 PminusA = P - newA;
-        // solve equations: P-A=a(B-A)+b(C-A)
-        // TODO: refactor this shit
-        float PminusA_1;
-        float PminusA_2;
-        float BminusA_1;
-        float BminusA_2;
-        float CminusA_1;
-        float CminusA_2;
-        bool ready = false;
-        if (!ready && BminusA.x != 0.0) {
-            PminusA_1 = PminusA.x;
-            BminusA_1 = BminusA.x;
-            CminusA_1 = CminusA.x;
-            if (CminusA.y != 0.0) {
-                PminusA_2 = PminusA.y;
-                BminusA_2 = BminusA.y;
-                CminusA_2 = CminusA.y;
-                ready = true;
-            } else if (CminusA.z != 0.0) {
-                PminusA_2 = PminusA.z;
-                BminusA_2 = BminusA.z;
-                CminusA_2 = CminusA.z;
-                ready = true;
-            }
-        }
-        if (!ready && BminusA.y != 0) {
-            PminusA_1 = PminusA.y;
-            BminusA_1 = BminusA.y;
-            CminusA_1 = CminusA.y;
-            if (CminusA.x != 0.0) {
-                PminusA_2 = PminusA.x;
-                BminusA_2 = BminusA.x;
-                CminusA_2 = CminusA.x;
-                ready = true;
-            } else if (CminusA.z != 0.0) {
-                PminusA_2 = PminusA.z;
-                BminusA_2 = BminusA.z;
-                CminusA_2 = CminusA.z;
-                ready = true;
-            }
-        }
-        if (!ready && BminusA.z != 0) {
-            PminusA_1 = PminusA.z;
-            BminusA_1 = BminusA.z;
-            CminusA_1 = CminusA.z;
-            if (CminusA.x != 0.0) {
-                PminusA_2 = PminusA.x;
-                BminusA_2 = BminusA.x;
-                CminusA_2 = CminusA.x;
-                ready = true;
-            } else if (CminusA.y != 0.0) {
-                PminusA_2 = PminusA.y;
-                BminusA_2 = BminusA.y;
-                CminusA_2 = CminusA.y;
-                ready = true;
-            }
-        }
-        if (!ready) {
-            return pair<float, vec3>(0, vec3(-1, -1, -1));
-        }
-        const float b1 = (PminusA_2 * BminusA_1 - PminusA_1 * BminusA_2);
-        const float b2 = (CminusA_2 * BminusA_1 - CminusA_1 * BminusA_2);
-        const float b = b1 / b2;
-        const float a = (PminusA_1 - b * CminusA_1) / BminusA_1;
-        
-        if ((0 <= a) && (a <= 1)
-                && (0 <= b) && (b <= 1)
-                && (a + b <= 1)) {
-            //minDist = t;
-
-         
-            /*
-            
-            
-                result.t = t;
-            result.point = P;
-            result.normal = normal;
-            result.primitive = this;
-            result.empty = false;
-            
-            */
-        
-            return pair<float, vec3>(glm::distance(ray.orig, P) , P);
-        }
-    
-    return pair<float, vec3>(0, vec3(-1, -1, -1));
-}
-
-
-
-
-
-   
     pair<float, vec3> intersection(ray r) { 
         //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
 
-        vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
+      //  vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
         vec3 raydirection = vec3(trans * vec4(r.dir, 0));
         if (dot(raydirection, normal) == 0) {
@@ -417,8 +248,8 @@ public:
         }
 
 
-        vec3 orig = vec3(trans * vec4(r.orig, 1));
-        rayorigin = orig;
+        vec3 rayorigin = vec3(trans * vec4(r.orig, 1));
+        
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
 
@@ -453,11 +284,15 @@ public:
     vec3 Ap;
     vec3 Bp;
     vec3 Cp;
+
+    vec3 normal;
+    vec3 inverseNormal;
+
     mat4 trans;
 private:
    
     
-    vec3 rayorigin;
+    
    
 };
 
