@@ -189,7 +189,7 @@ int visibility(ray r, Scene newScene, int index) {
         }
 
         if (newpair.first > 0.0101) {
-          // return 0;
+           return 0;
             newpair.first = 0;
            
         }

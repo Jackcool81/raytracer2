@@ -214,9 +214,9 @@ public:
 
 
 
-    Triangle(vec3& verts, vec3& verts2, vec3& verts3, const mat4& inverseTrans, vec3& origin, vec3 amb, vec3 dif,
+    Triangle(vec3& verts, vec3& verts2, vec3& verts3, const mat3& trans, vec3 amb, vec3 dif,
         vec3 emissn, vec3 specula, float shinines)
-        : A(verts), B(verts2), C(verts3), trans(inverseTrans), rayorigin(origin)
+        : A(verts), B(verts2), C(verts3), trans(trans)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
@@ -295,7 +295,94 @@ public:
         }
     }
 
+    pair<float, vec3> newIntersection(ray r) {
+        float ax = A[0];
+        float ay = A[1]; 
+        float az = A[2];
 
+        float bx = B[0];
+        float by = B[1];
+        float bz = B[2];
+
+        float cx = C[0];
+        float cy = C[1];
+        float cz = C[2];
+
+        float dx = r.dir[0];
+        float dy = r.dir[1];
+        float dz = r.dir[2];
+
+        float ox = r.orig[0];
+        float oy = r.orig[1];
+        float oz = r.orig[2];
+
+
+
+        float a = ax - bx;
+        float d = ax - cx;
+        float g = dx;
+        float b = ay - by;
+        float e = ay - cy;
+        float h = dy;
+        float c = az - bz;
+        float f = az - cz;
+        float i = dz;
+
+        float j = ax - ox;
+        float k = ay - oy;
+        float l = az - oz;
+        
+        float ei = e * i;
+
+        float hf = h * f;
+
+        float gf = g * f;
+
+        float di = d * i;
+
+        float dh = d * h;
+
+        float eg = e * g;
+
+        float ak = a * k;
+
+        float jb = j * b;
+
+        float jc = j * c;
+
+        float al = a * l;
+
+        float bl = b * l;
+
+        float kc = k * c;
+
+        float m = a * (ei - hf) + b * (gf - di) + c * (dh - eg);
+
+        float beta = j * (ei - hf) + k * (gf - di) + l * (dh - eg);
+        beta = beta / m;
+
+        float gamma = i * (ak - jb) + h * (jc - al) + g * (bl - kc);
+        gamma = gamma / m;
+
+        float t = f * (ak - jb) + e * (jc - al) + d * (bl - kc);
+        t = t / m;
+        t = -1.0f * t;
+
+
+        vec3 n = normalize(cross(C - A, B - A ));
+
+        
+        if (beta > 0 && gamma > 0 && beta + gamma < 1) {
+            r.inter = r.orig + (t * r.dir);
+            //r.inter = rayorigin + (t * raydirection);
+            t = glm::distance(r.orig, r.inter);
+            return pair<float, vec3>(t, r.inter);
+
+        }
+        else {
+            return pair<float, vec3>(0, vec3(-1, -1, -1));
+        }
+    }
 
     //, float &minDist
     pair<float, vec3> findIntersection(const ray &ray) const
@@ -408,16 +495,16 @@ public:
     pair<float, vec3> intersection(ray r) { 
         //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
 
-        vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
+        vec3 normal = normalize(cross((B - A), (C - A)));
         //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        vec3 raydirection = vec3(trans * vec4(r.dir, 0));
+        vec3 raydirection = r.dir;
         if (dot(raydirection, normal) == 0) {
             return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
 
-        vec3 orig = vec3(trans * vec4(r.orig, 1));
-        rayorigin = orig;
+        //vec3 orig = vec3(trans * vec4(r.orig, 1));
+        rayorigin = r.orig;
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
 
