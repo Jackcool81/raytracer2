@@ -269,6 +269,34 @@ public:
     }
         
 
+
+    pair<float, vec3> isHit(ray r) {
+
+        vec3 normal = glm::cross((B - A), (C - A));
+        normal = glm::normalize(normal);
+        float t = glm::dot(normal, (r.orig - A)) / glm::dot(normal, r.dir);
+        t = -1.0 * t;
+        if (t < 0) {
+            return pair<float, vec3>(0, vec3(-1, -1, -1));
+        }
+
+        vec3 position = r.orig + t * r.dir;
+
+        if (((glm::dot(glm::cross((B - A), (position - A)), normal)) >= 0) &&
+            ((glm::dot(glm::cross((C - B), (position - B)), normal)) >= 0) &&
+            ((glm::dot(glm::cross((A - C), (position - C)), normal)) >= 0))
+        {
+
+            //return Intersection(position, normal, this);
+            return pair<float, vec3>(glm::distance(r.orig, position), position);
+        }
+        else {
+            return pair<float, vec3>(0, vec3(-1, -1, -1));
+        }
+    }
+
+
+
     //, float &minDist
     pair<float, vec3> findIntersection(const ray &ray) const
     {
@@ -381,7 +409,7 @@ public:
         //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
 
         vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
-      //  vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
+        //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
         vec3 raydirection = vec3(trans * vec4(r.dir, 0));
         if (dot(raydirection, normal) == 0) {
             return pair<float, vec3>(0, vec3(-1, -1, -1));

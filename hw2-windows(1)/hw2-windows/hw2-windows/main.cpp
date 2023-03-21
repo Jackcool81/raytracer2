@@ -143,7 +143,7 @@ void write_color(int index, BYTE pixels[], vec3 pixel_color) {
     pixels[index+2] = (unsigned char)pixel_color[0];
 }
 
-int visibility(ray r, Scene newScene) {
+int visibility(ray r, Scene newScene, int index) {
     int blocked = 1;
     float blockers = 1.0;
     pair<float, vec3> newpair;
@@ -171,7 +171,11 @@ int visibility(ray r, Scene newScene) {
     */
       
     for (i = 0; i < newScene.objectz.size(); i++) {
+        if (i == index) {
+            continue;
+        }
         if (newScene.types[i] == "Sphere") {
+            
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
 
         }
@@ -180,12 +184,12 @@ int visibility(ray r, Scene newScene) {
             return 0;
         }
         if (newScene.types[i] == "Triangle") {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->findIntersection(r);
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
 
         }
 
         if (newpair.first > 0.0101) {
-           //return 0;
+          // return 0;
             newpair.first = 0;
            
         }
@@ -203,8 +207,8 @@ int visibility(ray r, Scene newScene) {
     //return blocked;
 }
 
-tuple<string, Scene*, vec3> intersection(ray r, Scene newScene) {
-    tuple <string, Scene*, vec3> geek ("", NULL, vec3(0,0,0));
+tuple<string, Scene*, vec3, int> intersection(ray r, Scene newScene) {
+    tuple <string, Scene*, vec3, int> geek ("", NULL, vec3(0,0,0), -1);
    
     float min_t = 1000000; // number of bounces from read file
     Scene min_primitive;
@@ -236,6 +240,7 @@ tuple<string, Scene*, vec3> intersection(ray r, Scene newScene) {
             get<0>(geek) = thetype;
             get<1>(geek) = newScene.objectz[i];
             get<2>(geek) = newpair.second;
+            get<3>(geek) = i;
 
 
         }
@@ -294,7 +299,7 @@ vec3 normalChecker(tuple<string, Scene*, vec3> stuff, bool light, vec3 lightdir)
 }
 
 
-vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
+vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene) {
     vec3 color = vec3(0, 0, 0);
     vec3 intersection = get<2>(stuff);
     int name = 0;
@@ -341,7 +346,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         vec3 B = static_cast<Triangle*>(get<1>(stuff))->B; //getting the world coord center of the sphere    
         vec3 C = static_cast<Triangle*>(get<1>(stuff))->C; //getting the world coord center of the sphere    
         float offset = 0.01;
-        mat3 matrix = mat3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans));
+        mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
         A = matrix * A;
         B = matrix * B;
         C = matrix * C;
@@ -403,7 +408,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         //debug both
 
 
-        if (visibility(r, newScene) == 1) {
+        if (visibility(r, newScene, get<3>(stuff)) == 1) {
 
             color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
         }
@@ -472,11 +477,11 @@ int main(int argc, char* argv[]) {
 
             pixel_color = vec3(0, 0, 0);
             // int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
-            if (i == 189 && j == 423) {
-                                                                      pixel_color = vec3(0, 0, 0);
+            if (i == 197 && j == 382) {
+               pixel_color = vec3(0, 0, 0);
             }
              //check intersection with the ray and the scene
-            tuple<string, Scene*, vec3> a = intersection(r, newScene); //eye ray check
+            tuple<string, Scene*, vec3, int> a = intersection(r, newScene); //eye ray check
             if (get<0>(a) != "") {
                pixel_color = pixcolor(a, 5, newScene); //recursively raytrace the pixel color
             
