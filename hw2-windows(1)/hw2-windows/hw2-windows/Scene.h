@@ -55,9 +55,9 @@ public:
 
 
     Sphere() {}
-    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, vec3 invOrigin,
+    Sphere(const vec3& center, const float& radius, const mat4& transformation, mat4& inverseTrans, mat3& transposeInv, vec3 invOrigin,
         vec3 amb, vec3 dif, vec3 emissn, vec3 specula, float shinines)
-        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), rayorigin(invOrigin)
+        : xyz(center), rad(radius), trans(transformation), invTrans(inverseTrans), transposeInv(transposeInv),rayorigin(invOrigin)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
@@ -199,6 +199,7 @@ public:
     float shini;
     mat4 trans;
     mat4 invTrans;
+    mat3 transposeInv;
 private:
     vec3 xyz;
     float rad;

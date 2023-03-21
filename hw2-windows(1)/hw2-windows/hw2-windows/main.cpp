@@ -327,7 +327,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1)) - sphereCenter);
        // newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1));
         //intersection += (normal * offset);
-        mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
+        mat3 matrix = static_cast<Sphere*>(get<1>(stuff))->transposeInv;
         normal = normalize(matrix * normal);
         
         //normal = normalize(intersection - sphereCenter);
