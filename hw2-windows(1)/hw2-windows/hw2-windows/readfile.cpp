@@ -96,12 +96,9 @@ void readfile(const char* filename, Scene& newScene)
                 // Process the light, add it to database.
                 // Lighting Command
                 if (cmd == "directional" || cmd == "point") {
-                    if (numused == 5) { // No more Lights 
-                        cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
-                    } else {
+                    
                         validinput = readvals(s, 6, values); // Position/color for lts.
                         if (validinput) {
-                            int buff = numused * 4;
                             for (i = 0; i < 3; i++) {
                                 newScene.lightposn.push_back(values[i]);
                             }
@@ -117,8 +114,6 @@ void readfile(const char* filename, Scene& newScene)
                             ++newScene.numlights; 
                         }
                     }
-                }
-
                 // Material Commands 
                 // Ambient, diffuse, specular, shininess properties for each object.
                 // Filling this in is pretty straightforward, so I've left it in 
@@ -193,7 +188,7 @@ void readfile(const char* filename, Scene& newScene)
                         vec3 b = vec3(oldb);
                         vec3 c = vec3(oldc);
                        
-                        newScene.objectz.push_back(new Triangle(a, b, c, trans,
+                        newScene.objectz.push_back(Triangle(a, b, c, trans,
                                                                 ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;
