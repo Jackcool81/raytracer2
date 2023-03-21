@@ -148,8 +148,8 @@ int visibility(ray r, Scene newScene) {
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
-    
-        for (i = 0; i < newScene.objectz.size(); i++) {
+    /*
+      for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             
@@ -168,6 +168,28 @@ int visibility(ray r, Scene newScene) {
         }
     }
     
+    */
+      
+    for (i = 0; i < newScene.objectz.size(); i++) {
+        if (newScene.types[i] == "Sphere") {
+            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
+
+        }
+
+        if (newpair.first > 0.0101) {
+            return 0;
+        }
+        if (newScene.types[i] == "Triangle") {
+            newpair = static_cast<Triangle*>(newScene.objectz[i])->findIntersection(r);
+
+        }
+
+        if (newpair.first > 0.0101) {
+           //return 0;
+            newpair.first = 0;
+           
+        }
+    }
     
     
    
@@ -282,6 +304,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
     vec3 emiss = vec3(0, 0, 0);
     float shiny = 0.0;
     vec3 normal;
+    vec3 newIntersection;
     //Adding ambi and emiss
     if (get<0>(stuff) == "Sphere") {
         name = 1;
@@ -297,8 +320,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
              float offset = 0.01;
              
         normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(intersection, 1)) - sphereCenter);
-
-       // intersection += (normal * offset);
+        newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(intersection, 1));
+        //intersection += (normal * offset);
         mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
         normal = normalize(matrix * normal);
         
@@ -325,7 +348,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
        // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
-       
+        newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(intersection, 1));
+
        // intersection += (normal * offset);
      
 
@@ -357,8 +381,9 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
         else {
             vec3 lightpos = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
             
+            //use old intersectino if this fuck
             lightdir = normalize(lightpos - intersection); //find the light direction 
-            intersection += .01f * lightdir;
+            intersection += (.01f * lightdir);
           
             lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
             half1 = normalize(lightdir + eyedirn); //finding the half vector 
@@ -367,8 +392,9 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
        // vec3 direction = glm::normalize(position - input);
        
        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
+        //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
         ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
-     
+
         //possiblities the problem is we are getting to much shadow
         //visibibly is always returning 0
         //as is our intersection methods
@@ -446,8 +472,8 @@ int main(int argc, char* argv[]) {
 
             pixel_color = vec3(0, 0, 0);
             // int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
-            if (i == 106 && j == 501) {
-                pixel_color = vec3(0, 0, 0);
+            if (i == 189 && j == 423) {
+                                                                      pixel_color = vec3(0, 0, 0);
             }
              //check intersection with the ray and the scene
             tuple<string, Scene*, vec3> a = intersection(r, newScene); //eye ray check

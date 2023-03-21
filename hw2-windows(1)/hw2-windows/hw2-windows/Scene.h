@@ -130,7 +130,9 @@ public:
 
 
         //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+        //vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+        vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
+
         rayorigin = vec3(invTrans * vec4(r.orig, 1));
        // rayorigin = r.orig;
         //compute the hit
@@ -270,17 +272,18 @@ public:
     //, float &minDist
     pair<float, vec3> findIntersection(const ray &ray) const
     {
-        vec3 normal = normalize(cross((B - A), (C - A)));
-        vec3 newA = vec3(trans * vec4(A,1)) ;
-        vec3 newB = vec3(trans * vec4(B, 1));
-        vec3 newC = vec3(trans * vec4(C, 1));
-    
-    const glm::vec3 BminusA = B - A;
-    const glm::vec3 CminusA = C - A;
-    const float t = (dot(A, normal) - glm::dot(ray.orig, normal)) / glm::dot(ray.dir, normal);
+        
+
+        vec3 newA = vec3(inverse(trans) * vec4(A,1)) ;
+        vec3 newB = vec3(inverse(trans) * vec4(B, 1));
+        vec3 newC = vec3(inverse(trans) * vec4(C, 1));
+        vec3 normal = normalize(cross((newB - newA), (newC - newA)));
+    const glm::vec3 BminusA = newB - newA;
+    const glm::vec3 CminusA = newC - newA;
+    const float t = (dot(newA, normal) - glm::dot(ray.orig, normal)) / glm::dot(ray.dir, normal);
     //if (t > 0 && t < minDist) {
         const glm::vec3 P = ray.orig + t * ray.dir;
-        const glm::vec3 PminusA = P - A;
+        const glm::vec3 PminusA = P - newA;
         // solve equations: P-A=a(B-A)+b(C-A)
         // TODO: refactor this shit
         float PminusA_1;
