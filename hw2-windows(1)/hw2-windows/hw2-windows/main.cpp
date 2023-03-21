@@ -148,12 +148,13 @@ int visibility(ray r, Scene newScene) {
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
-    /*
+    
         for (i = 0; i < newScene.objectz.size(); i++) {
         if (newScene.types[i] == "Sphere") {
             newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
             
         }
+
         if (newpair.first > 0.0101) {
             return 0;
         }
@@ -161,13 +162,13 @@ int visibility(ray r, Scene newScene) {
             newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
             
         }
+
         if (newpair.first > 0.0101) {
             return 0;
         }
     }
     
-    */
-  
+    
     
    
     
@@ -274,7 +275,7 @@ vec3 normalChecker(tuple<string, Scene*, vec3> stuff, bool light, vec3 lightdir)
 vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
     vec3 color = vec3(0, 0, 0);
     vec3 intersection = get<2>(stuff);
-   
+    int name = 0;
     vec3 diff = vec3(0,0,0);
     vec3 specular = vec3(0, 0, 0);
     vec3 ambient = vec3(.2, .2, .2);
@@ -283,6 +284,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
     vec3 normal;
     //Adding ambi and emiss
     if (get<0>(stuff) == "Sphere") {
+        name = 1;
         ambient = static_cast<Sphere*>(get<1>(stuff))->ambi;
         emiss = static_cast<Sphere*>(get<1>(stuff))->emiss;
        // color += static_cast<Sphere*>(get<1>(stuff))->ambi + static_cast<Sphere*>(get<1>(stuff))->emiss;
@@ -293,11 +295,12 @@ vec3 pixcolor(tuple<string, Scene*, vec3> stuff, int depth, Scene newScene) {
        
         
              float offset = 0.01;
-        normal = normalize(intersection - sphereCenter);
+             
+        normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(intersection, 1)) - sphereCenter);
 
        // intersection += (normal * offset);
         mat3 matrix = mat3(transpose(static_cast<Sphere*>(get<1>(stuff))->invTrans));
-        normal = matrix * normal;
+        normal = normalize(matrix * normal);
         
         //normal = normalize(intersection - sphereCenter);
        
@@ -443,7 +446,9 @@ int main(int argc, char* argv[]) {
 
             pixel_color = vec3(0, 0, 0);
             // int* pixel_color = FindIntersection(r, newScene.objectz, newScene);
-
+            if (i == 106 && j == 501) {
+                pixel_color = vec3(0, 0, 0);
+            }
              //check intersection with the ray and the scene
             tuple<string, Scene*, vec3> a = intersection(r, newScene); //eye ray check
             if (get<0>(a) != "") {
