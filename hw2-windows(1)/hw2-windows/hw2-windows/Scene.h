@@ -161,12 +161,12 @@ public:
 
         return 0;
     }
-
+    mat4 invTrans;
 private:
     vec3 xyz;
     float rad;
     mat4 trans;
-    mat4 invTrans;
+   
     vec3 rayorigin;
     float ambi[4], diffu[4], specul[4], emiss[4], shini;
 };
