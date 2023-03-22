@@ -376,7 +376,8 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
     //Ask about reflections
     //what does attentutaion do does it make it look better?
     
-
+    /*
+    
     for (int i = 0; i < newScene.numlights; i++) {
         vec3 lightdir;
         vec3 lightcol;
@@ -428,6 +429,57 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         
        
       
+
+    }
+
+
+    */
+
+    for (int i = 0; i < newScene.numlights; i++) {
+        vec3 lightdir;
+        vec3 lightcol;
+        vec3 half1;
+        light currlite = newScene.lights[i];
+        float one = 1.0f;
+        float atten = one;
+        if (currlite.type == "dir") { //directional
+            vec3 lightposition = currlite.dir;
+            lightdir = normalize(lightposition); //as specified by the directional light
+            half1 = normalize(lightdir + eyedirn);
+            lightcol = currlite.color;
+        }
+        else {
+            vec3 lightpos = currlite.dir;
+            lightdir = normalize(lightpos - inter); //find the light direction 
+            float dist = glm::distance(lightpos, inter);
+            atten = currlite.atten;
+            atten = one / pow(dist, atten);
+            inter += (.01f * lightdir);
+            lightcol = currlite.color;
+            half1 = normalize(lightdir + eyedirn); //finding the half vector 
+        }
+
+        // vec3 direction = glm::normalize(position - input);
+
+        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
+         //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
+        ray r(inter, lightdir); //cast a ray from the point of intersection, in the light direction
+
+        //possiblities the problem is we are getting to much shadow
+        //visibibly is always returning 0
+        //as is our intersection methods
+        // SHADOWS ARE NOT CORRECT
+        //could be the ray we pass into intersection, could be the intersection method handling the ray
+        //debug both
+
+
+        if (visibility(r, newScene, get<3>(stuff)) == 1) {
+
+            color += atten * ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
+        }
+
+
+
 
     }
      color += ambient + emiss;
@@ -510,7 +562,7 @@ int main(int argc, char* argv[]) {
              //check intersection with the ray and the scene
             tuple<string, Scene*, vec3, int> a = intersection(r, newScene); //eye ray check
             if (get<0>(a) != "") {
-               pixel_color = pixcolor(a, 5, newScene, r); //recursively raytrace the pixel color
+               pixel_color = pixcolor(a, newScene.maxDepth, newScene, r); //recursively raytrace the pixel color
             
             }
            
@@ -527,7 +579,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cerr << "\nDone.\n";
-    string img = "test.png";
+    string img = newScene.output;
     saveScreenshot(pixels, img);
     FreeImage_DeInitialise();
   

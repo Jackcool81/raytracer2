@@ -15,6 +15,13 @@ using namespace std;
 using namespace glm;
 using namespace std;
 
+struct light {
+    vec3 dir;
+    vec3 color;
+    float atten;
+    string type;
+};
+
 class Scene {
 public:
 
@@ -29,9 +36,11 @@ public:
     vector<Scene*> objectz;
     vector<string> types;
     vector<vec3> vertexs;
-    vector<float> lightposn;
-    vector<float> lightcol;
+    vector<light> lights;
     int numlights = 0;
+
+    string output = "raytrace.png";
+    int maxDepth = 5;
     
     //Calculate the length of your dynamic array.
 

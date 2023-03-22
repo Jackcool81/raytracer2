@@ -80,7 +80,7 @@ void readfile(const char* filename, Scene& newScene)
         // This is done using standard STL Templates 
         stack <mat4> transfstack; 
         transfstack.push(mat4(1.0));  // identity
-        
+        vec3 attenu = vec3(0, 0, 0);
         getline (in, str); 
         while (in) {
             if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
@@ -96,26 +96,33 @@ void readfile(const char* filename, Scene& newScene)
                 // Process the light, add it to database.
                 // Lighting Command
                 if (cmd == "directional" || cmd == "point") {
-                    if (numused == 5) { // No more Lights 
-                        cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
-                    } else {
-                        validinput = readvals(s, 6, values); // Position/color for lts.
-                        if (validinput) {
-                            int buff = numused * 4;
-                            for (i = 0; i < 3; i++) {
-                                newScene.lightposn.push_back(values[i]);
-                            }
-                            for (i = 3; i < 6; i++) {
-                                newScene.lightcol.push_back(values[i]);
-                            }
-                            if (cmd == "directional") {
-                                newScene.lightposn.push_back(0);
-                            }
-                            else {
-                                newScene.lightposn.push_back(1);
-                            }
-                            ++newScene.numlights; 
+                    validinput = readvals(s, 6, values); // Position/color for lts.
+                    if (validinput) {
+                        if (cmd == "directional") {
+                            light a;
+                            a = { vec3(values[0], values[1], values[2]), vec3(values[3], values[4], values[5]), 0.0, "dir" };
+
+                            newScene.lights.push_back(a);
                         }
+                        else {
+                            float dummy = 0;
+
+                            light a;
+
+
+                            if (attenu.x > .999) {
+                                dummy = 0;
+                            }
+                            if (attenu.y > .999) {
+                                dummy = 1;
+                            }
+                            if (attenu.z > .999) {
+                                dummy = 2;
+                            }
+                            a = { vec3(values[0], values[1], values[2]), vec3(values[3], values[4], values[5]), dummy, "point" };
+                            newScene.lights.push_back(a);
+                        }
+                        ++newScene.numlights;
                     }
                 }
 
@@ -231,9 +238,11 @@ void readfile(const char* filename, Scene& newScene)
                     
                 }
 
-                else if (cmd == "attenuation") {
-                    
-                    
+                if (cmd == "attenuation") {
+                    validinput = readvals(s, 3, values);
+                    if (validinput) {
+                        attenu = vec3(values[0], values[1], values[2]);
+                    }
                 }
 
                 // I've left the code for loading objects in the skeleton, so 
@@ -320,13 +329,20 @@ void readfile(const char* filename, Scene& newScene)
                     }
                 }
                 
-               /* else if (cmd == "output") {
+                else if (cmd == "output") {
                     validinput = readvals(s, 1, values);
                     if (validinput) {
-                        
+                        newScene.output = validinput;
                     }
                 }
-                */
+
+                else if (cmd == "maxdepth") {
+                    validinput = readvals(s, 1, values);
+                    if (validinput) {
+                        newScene.maxDepth = validinput;
+                    }
+                }
+                
                 // I include the basic push/pop code for matrix stacks
                 else if (cmd == "pushTransform") {
                     transfstack.push(transfstack.top()); 
