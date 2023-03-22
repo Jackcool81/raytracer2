@@ -215,9 +215,9 @@ public:
 
 
 
-    Triangle(vec3& verts, vec3& verts2, vec3& verts3, vec3& vertsp, vec3& verts2p, vec3& verts3p, vec3& normal, vec3& normalInvTrans, const mat4& inverseTrans, vec3 amb, vec3 dif,
+    Triangle(vec3& verts, vec3& verts2, vec3& verts3, vec3& vertsp, vec3& verts2p, vec3& verts3p, vec3& normal, vec3& normalInvTrans, mat4& trans, const mat4& inverseTrans, vec3 amb, vec3 dif,
         vec3 emissn, vec3 specula, float shinines)
-        : A(verts), B(verts2), C(verts3), Ap(vertsp), Bp(verts2p), Cp(verts3p), normal(normal), inverseNormal(normalInvTrans), trans(inverseTrans)
+        : A(verts), B(verts2), C(verts3), Ap(vertsp), Bp(verts2p), Cp(verts3p), normal(normal), inverseNormal(normalInvTrans), trans(trans), invTrans(inverseTrans)
     {
         for (int i = 0; i < 3; i++) {
             ambi[i] = amb[i];
@@ -242,13 +242,18 @@ public:
 
       //  vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
         //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        vec3 raydirection = vec3(trans * vec4(r.dir, 0));
+        
+        
+        //trans is inversetrans
+        
+        
+        vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
         if (dot(raydirection, normal) == 0) {
             return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
 
-        vec3 rayorigin = vec3(trans * vec4(r.orig, 1));
+        vec3 rayorigin = vec3(invTrans * vec4(r.orig, 1));
         
         float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
       
@@ -261,8 +266,11 @@ public:
 
         float alpha = 1 - beta - gamma;
 
-        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-            r.inter = r.orig + (t * r.dir);
+        //if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+        if (beta > 0.001 && gamma > 0.001 && beta + gamma < 1) {
+            //r.inter = r.orig + (t * r.dir);
+            //use regular transform
+            r.inter = vec3(trans * vec4(P, 1));
             //r.inter = rayorigin + (t * raydirection);
             t = glm::distance(r.orig, r.inter);
             return pair<float, vec3>(t, r.inter);
@@ -288,6 +296,7 @@ public:
     vec3 normal;
     vec3 inverseNormal;
 
+    mat4 invTrans;
     mat4 trans;
 private:
    

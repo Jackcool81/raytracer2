@@ -188,14 +188,14 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         //vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        mat3 matrix = mat3(trans);
+                        
                         vec3 A = newScene.vertexs[values[0]];
                         vec3 B = newScene.vertexs[values[1]];
                         vec3 C = newScene.vertexs[values[2]];
 
-                        vec3 AP = matrix * newScene.vertexs[values[0]];
-                        vec3 BP = matrix * newScene.vertexs[values[1]];
-                        vec3 CP = matrix * newScene.vertexs[values[2]];
+                        vec3 AP = vec3(trans * vec4(newScene.vertexs[values[0]],1));
+                        vec3 BP = vec3(trans * vec4(newScene.vertexs[values[1]], 1));
+                        vec3 CP = vec3(trans * vec4(newScene.vertexs[values[2]], 1));
 
 
                         vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
@@ -203,7 +203,7 @@ void readfile(const char* filename, Scene& newScene)
                         vec3 normalInvTrans = normalize(cross(normalize(BP - AP), normalize(CP - AP)));
 
 
-                        newScene.objectz.push_back(new Triangle(A, B, C, AP, BP, CP, normal, normalInvTrans, inverseTrans, 
+                        newScene.objectz.push_back(new Triangle(A, B, C, AP, BP, CP, normal, normalInvTrans, trans, inverseTrans, 
                                                                 ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;
@@ -228,6 +228,11 @@ void readfile(const char* filename, Scene& newScene)
                       
                         
                     }
+                    
+                }
+
+                else if (cmd == "attenuation") {
+                    
                     
                 }
 

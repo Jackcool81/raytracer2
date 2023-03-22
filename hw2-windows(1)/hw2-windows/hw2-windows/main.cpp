@@ -169,7 +169,7 @@ int visibility(ray r, Scene newScene, int index) {
     }
     
     */
-      /*
+      
        for (i = 0; i < newScene.objectz.size(); i++) {
         if (i == index) {
             continue;
@@ -189,13 +189,13 @@ int visibility(ray r, Scene newScene, int index) {
         }
 
         if (newpair.first > 0.0101) {
-          // return 0;
-            newpair.first = 0;
+           return 0;
+            //newpair.first = 0;
            
         }
     }
       
-      */
+      
    
     
     
@@ -402,6 +402,14 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
         //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
         ray r(inter, lightdir); //cast a ray from the point of intersection, in the light direction
+
+
+        //ray intersection is transformed in sphere
+        //by transform matrix 
+
+        //ray intersection is also tranformed in triangle
+        //by transformation matrix
+
 
         //possiblities the problem is we are getting to much shadow
         //visibibly is always returning 0
