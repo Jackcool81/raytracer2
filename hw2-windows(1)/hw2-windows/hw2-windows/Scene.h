@@ -266,8 +266,8 @@ public:
 
         float alpha = 1 - beta - gamma;
 
-        //if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-        if (beta > 0.001 && gamma > 0.001 && beta + gamma < 1) {
+        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+        //if (beta > 0.001 && gamma > 0.001 && beta + gamma < 1) {
             //r.inter = r.orig + (t * r.dir);
             //use regular transform
             r.inter = vec3(trans * vec4(P, 1));
