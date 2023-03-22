@@ -21,6 +21,7 @@
 #include "ray.h"
 #include "Scene.h"
 #include <tuple>
+#include <cmath>
 #include <utility>
 
 
@@ -244,8 +245,6 @@ tuple<string, Scene*, vec3, int> intersection(ray r, Scene newScene) {
             get<1>(geek) = newScene.objectz[i];
             get<2>(geek) = newpair.second;
             get<3>(geek) = i;
-
-
         }
 
 
@@ -379,21 +378,23 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         vec3 lightdir;
         vec3 lightcol;
         vec3 half1;
-        if (newScene.lightposn[(i * 4)+3] == 0) { //directional
-            vec3 lightposition = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
+        light currlite = newScene.lights[i];
+        float one = 1.0f;
+        float atten = one;
+        if(currlite.type == "dir") { //directional
+            vec3 lightposition = currlite.dir;
             lightdir = normalize(lightposition); //as specified by the directional light
             half1 = normalize(lightdir + eyedirn);
-            lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
-            
+            lightcol = currlite.color;
         }
         else {
-            vec3 lightpos = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
-            
-            //use old intersectino if this fuck
+            vec3 lightpos = currlite.dir;
             lightdir = normalize(lightpos - inter); //find the light direction 
+            float dist = glm::distance(lightpos, inter);
+            atten = currlite.atten;
+            atten = one / pow(dist, atten);
             inter += (.01f * lightdir);
-          
-            lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
+            lightcol = currlite.color;
             half1 = normalize(lightdir + eyedirn); //finding the half vector 
         }
       
@@ -413,7 +414,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
 
         if (visibility(r, newScene, get<3>(stuff)) == 1) {
 
-            color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
+            color += atten * ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
         }
         
        

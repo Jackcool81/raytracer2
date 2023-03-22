@@ -74,13 +74,14 @@ void readfile(const char* filename, Scene& newScene)
     string str, cmd; 
     ifstream in;
     in.open(filename); 
+    vec3 attenuate = vec3(1, 0, 0);
     if (in.is_open()) {
 
         // I need to implement a matrix stack to store transforms.  
         // This is done using standard STL Templates 
         stack <mat4> transfstack; 
         transfstack.push(mat4(1.0));  // identity
-        
+        vec3 attenu = vec3(0, 0, 0);
         getline (in, str); 
         while (in) {
             if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
@@ -92,32 +93,47 @@ void readfile(const char* filename, Scene& newScene)
                 GLfloat values[10]; // Position and color for light, colors for others
                                     // Up to 10 params for cameras.  
                 bool validinput; // Validity of input 
-
+                
                 // Process the light, add it to database.
                 // Lighting Command
-                if (cmd == "directional" || cmd == "point") {
-                    if (numused == 5) { // No more Lights 
-                        cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
-                    } else {
-                        validinput = readvals(s, 6, values); // Position/color for lts.
-                        if (validinput) {
-                            int buff = numused * 4;
-                            for (i = 0; i < 3; i++) {
-                                newScene.lightposn.push_back(values[i]);
-                            }
-                            for (i = 3; i < 6; i++) {
-                                newScene.lightcol.push_back(values[i]);
-                            }
-                            if (cmd == "directional") {
-                                newScene.lightposn.push_back(0);
-                            }
-                            else {
-                                newScene.lightposn.push_back(1);
-                            }
-                            ++newScene.numlights; 
-                        }
+                if (cmd == "attenuation") {
+                    validinput = readvals(s, 3, values);
+                    if (validinput) {
+                        attenu = vec3(values[0],values[1],values[2]);
                     }
                 }
+                if (cmd == "directional" || cmd == "point") {
+
+                    validinput = readvals(s, 6, values); // Position/color for lts.
+                    if (validinput) {
+                        if (cmd == "directional") {
+                            light a;
+                            a = { vec3(values[0], values[1], values[2]), vec3(values[3], values[4], values[5]), 0.0, "dir" };
+                           
+                            newScene.lights.push_back(a);
+                        }
+                        else {
+                            float dummy = 0;
+                            
+                            light a;
+                          
+
+                            if (attenu.x > .999) {
+                                dummy = 0;
+                            }
+                            if (attenu.y > .999) {
+                                dummy = 1;
+                            }
+                            if (attenu.z > .999) {
+                                dummy = 2;
+                            }
+                            a = { vec3(values[0], values[1], values[2]), vec3(values[3], values[4], values[5]), dummy, "point" };
+                            newScene.lights.push_back(a);
+                        }
+                        ++newScene.numlights;
+                    }
+                }
+                
 
                 // Material Commands 
                 // Ambient, diffuse, specular, shininess properties for each object.
