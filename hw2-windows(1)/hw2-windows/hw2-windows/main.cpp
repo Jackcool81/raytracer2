@@ -169,8 +169,8 @@ int visibility(ray r, Scene newScene, int index) {
     }
     
     */
-      
-       for (i = 0; i < newScene.objectz.size(); i++) {
+      /*
+         for (i = 0; i < newScene.objectz.size(); i++) {
         if (i == index) {
             continue;
         }
@@ -194,6 +194,8 @@ int visibility(ray r, Scene newScene, int index) {
            
         }
     }
+      */
+    
       
       
    
@@ -407,9 +409,9 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         //ray intersection is transformed in sphere
         //by transform matrix 
 
-        //ray intersection is also tranformed in triangle
-        //by transformation matrix
-
+        //ray intersection is not transformed because we transformed the
+        // points in readfile by transformation matrix
+        
 
         //possiblities the problem is we are getting to much shadow
         //visibibly is always returning 0

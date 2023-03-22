@@ -247,30 +247,31 @@ public:
         //trans is inversetrans
         
         
-        vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
-        if (dot(raydirection, normal) == 0) {
+        //vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
+        vec3 raydirection = r.dir;
+        if (dot(raydirection, inverseNormal) == 0) {
             return pair<float, vec3>(0, vec3(-1, -1, -1));
         }
 
 
-        vec3 rayorigin = vec3(invTrans * vec4(r.orig, 1));
-        
-        float t = dot(normal, (A - rayorigin)) / dot(raydirection, normal);
+        //vec3 rayorigin = vec3(invTrans * vec4(r.orig, 1));
+        vec3 rayorigin = r.orig;
+        float t = dot(inverseNormal, (Ap - rayorigin)) / dot(raydirection, inverseNormal);
       
 
         vec3 P = rayorigin + (t * raydirection);
 
-        float beta = SolveBary(normal, C - B, A - C, C, P);
+        float beta = SolveBary(inverseNormal, Cp - Bp, Ap - Cp, Cp, P);
 
-        float gamma = SolveBary(normal, A - C, B - A, A, P);
+        float gamma = SolveBary(inverseNormal, Ap - Cp, Bp - Ap, Ap, P);
 
         float alpha = 1 - beta - gamma;
 
         //if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-        if (beta > 0.001 && gamma > 0.001 && beta + gamma < 1) {
-            //r.inter = r.orig + (t * r.dir);
+        if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+            r.inter = r.orig + (t * r.dir);
             //use regular transform
-            r.inter = vec3(trans * vec4(P, 1));
+            //r.inter = vec3(trans * vec4(P, 1));
             //r.inter = rayorigin + (t * raydirection);
             t = glm::distance(r.orig, r.inter);
             return pair<float, vec3>(t, r.inter);

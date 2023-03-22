@@ -188,22 +188,40 @@ void readfile(const char* filename, Scene& newScene)
                         mat4 trans = transfstack.top();
                         mat4 inverseTrans = inverse(trans);
                         //vec3 rayorigin = vec3(inverseTrans * vec4(eyeinit, 1));
-                        
+                        mat3 matrix = mat3(trans);
                         vec3 A = newScene.vertexs[values[0]];
                         vec3 B = newScene.vertexs[values[1]];
                         vec3 C = newScene.vertexs[values[2]];
 
-                        vec3 AP = vec3(trans * vec4(newScene.vertexs[values[0]],1));
-                        vec3 BP = vec3(trans * vec4(newScene.vertexs[values[1]], 1));
-                        vec3 CP = vec3(trans * vec4(newScene.vertexs[values[2]], 1));
+                        vec4 AP = trans * vec4(newScene.vertexs[values[0]], 1);
+
+
+                        vec4 BP = trans * vec4(newScene.vertexs[values[1]], 1);
+                        vec4 CP = trans * vec4(newScene.vertexs[values[2]], 1);
+
+                        
+
+                        vec3 APa = vec3(AP.x/AP.w, AP.y / AP.w, AP.z / AP.w);
+                        vec3 BPb = vec3(BP.x / BP.w, BP.y / BP.w, BP.z / BP.w);
+                        vec3 CPc = vec3(CP.x / CP.w, CP.y / CP.w, CP.z / CP.w);
+
+        
+                      
+
+                       
+
+
+                        //vec3 AP = matrix * newScene.vertexs[values[0]];
+                        //vec3 BP = matrix * newScene.vertexs[values[1]];
+                        //vec3 CP = matrix * newScene.vertexs[values[2]];
 
 
                         vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
 
-                        vec3 normalInvTrans = normalize(cross(normalize(BP - AP), normalize(CP - AP)));
+                        vec3 normalInvTrans = normalize(cross(normalize(BPb - APa), normalize(CPc - APa)));
 
 
-                        newScene.objectz.push_back(new Triangle(A, B, C, AP, BP, CP, normal, normalInvTrans, trans, inverseTrans, 
+                        newScene.objectz.push_back(new Triangle(A, B, C, APa, BPb, CPc, normal, normalInvTrans, trans, inverseTrans, 
                                                                 ambient, diffuse, emission, specular, shininess));
                         newScene.types.push_back("Triangle");
                         ++numobjects;

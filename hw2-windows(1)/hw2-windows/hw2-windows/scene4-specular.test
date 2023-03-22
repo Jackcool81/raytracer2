@@ -2,7 +2,7 @@
 # Intended to show transforms
 # I know it's not the most exciting of scenes...
 
-size 200 200
+size 640 480
  
 output scene4-specular.png
 
