@@ -42,7 +42,7 @@ public:
     string output = "raytrace.png";
     int maxDepth = 5;
     
-    //Calculate the length of your dynamic array.
+    
 
 //Allocate the dynamic array as a pointer to a pointer to Technics - this is like
 //Making an array of pointers each holding some Technics heirarchy object.
@@ -77,55 +77,9 @@ public:
         }
         shini = shinines;
     }
-    //do we need to multiple our orignal center by the modelview then the transform matrix? 
+    
 
-    int shadow(ray r) {
-        vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
-
-
-        //compute the hit
-        vec3 newxyz = xyz;
-        float a = dot(raydirection, raydirection);
-
-        float b = dot(vec3(raydirection.x, raydirection.y, raydirection.z), (rayorigin - newxyz)) * 2;
-
-        float c = dot((rayorigin - newxyz), (rayorigin - newxyz)) - (rad * rad);
-        float determine = (b * b) - (4 * a * c);
-
-        if (determine < 0) {
-            return 1; //its visible
-        }
-
-        float plust = (-b + sqrt(determine)) / (2 * a);
-        float minust = (-b - sqrt(determine)) / (2 * a);
-
-        if (plust > 0 && minust > 0) {
-            if (plust < minust) {
-
-                return 0;
-            }
-            else {
-                return 0;
-            }
-        }
-
-        //if both equal to eachother
-        if (plust == minust) {
-
-            return 0;
-        }
-
-        //One positive one negative
-        if (plust > 0 && minust < 0) {
-            return 0;
-        }
-        if (minust > 0 && plust < 0) {
-            return 0;
-        }
-
-        return 1;
-    }
+    
 
     vec3 center() const { return xyz; }
 
@@ -138,13 +92,11 @@ public:
     pair<float, vec3> intersection(ray r) {
 
 
-        //vec3 rayorigin = vec3(inverse(trans) * vec4(r.orig, 1));
-        //vec3 raydirection = glm::normalize(vec3(invTrans * vec4(r.dir, 0)));
+      
         vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));
 
         rayorigin = vec3(invTrans * vec4(r.orig, 1));
-       // rayorigin = r.orig;
-        //compute the hit
+      
         vec3 newxyz = xyz;
         float a = dot(raydirection, raydirection);
 
@@ -247,13 +199,6 @@ public:
     }
 
     pair<float, vec3> intersection(ray r) { 
-        //vec3 normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-
-      //  vec3 normal = normalize(cross(normalize(B - A), normalize(C - A)));
-        //vec3 raydirection = glm::normalize(vec3(trans * vec4(r.dir, 0)));
-        
-        
-        //trans is inversetrans
         
         
         vec3 raydirection = vec3(invTrans * vec4(r.dir, 0));

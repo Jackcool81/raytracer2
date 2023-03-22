@@ -148,29 +148,10 @@ int visibility(ray r, Scene newScene, int index) {
     float blockers = 1.0;
     pair<float, vec3> newpair;
     int i;
-    /*
-      for (i = 0; i < newScene.objectz.size(); i++) {
-        if (newScene.types[i] == "Sphere") {
-            newpair = static_cast<Sphere*>(newScene.objectz[i])->intersection(r);
-            
-        }
-
-        if (newpair.first > 0.0101) {
-            return 0;
-        }
-        if (newScene.types[i] == "Triangle") {
-            newpair = static_cast<Triangle*>(newScene.objectz[i])->intersection(r);
-            
-        }
-
-        if (newpair.first > 0.0101) {
-            return 0;
-        }
-    }
-    
-    */
+   
       /*
-        for (i = 0; i < newScene.objectz.size(); i++) {
+      this is for our visibility
+       for (i = 0; i < newScene.objectz.size(); i++) {
         if (i == index) {
             continue;
         }
@@ -196,6 +177,8 @@ int visibility(ray r, Scene newScene, int index) {
     }
       
       */
+       
+      
      
       
    
@@ -278,30 +261,6 @@ vec3 ComputeLight(vec3 direction, vec3 lightcolor, vec3 normal, vec3 halfvec, ve
     return retval;
 }
 
-vec3 normalChecker(tuple<string, Scene*, vec3> stuff, bool light, vec3 lightdir) {
-    vec3 returnval = vec3(0, 0, 0);
-    if (light == true) { //point
-        if (get<0>(stuff) == "Sphere") {
-
-
-        }
-        if (get<0>(stuff) == "Triangle") {
-
-
-        }
-    }
-    if (light == false) { //directional
-        if (get<0>(stuff) == "Sphere") {
-
-
-        }
-        if (get<0>(stuff) == "Triangle") {
-
-
-        }
-    }
-    return returnval;
-}
 
 
 vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene, ray reflection) {
@@ -320,7 +279,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         name = 1;
         ambient = static_cast<Sphere*>(get<1>(stuff))->ambi;
         emiss = static_cast<Sphere*>(get<1>(stuff))->emiss;
-       // color += static_cast<Sphere*>(get<1>(stuff))->ambi + static_cast<Sphere*>(get<1>(stuff))->emiss;
+      
         diff = static_cast<Sphere*>(get<1>(stuff))->diffu;
         specular = static_cast<Sphere*>(get<1>(stuff))->specul;
         shiny = static_cast<Sphere*>(get<1>(stuff))->shini;
@@ -330,15 +289,11 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
              float offset = 0.01;
              
         normal = normalize(vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1)) - sphereCenter);
-       // newIntersection = vec3(static_cast<Sphere*>(get<1>(stuff))->invTrans * vec4(inter, 1));
-        //intersection += (normal * offset);
+  
         mat3 matrix = static_cast<Sphere*>(get<1>(stuff))->transposeInv;
         normal = normalize(matrix * normal);
         
-        //normal = normalize(intersection - sphereCenter);
        
-        
-        //normal = normalize(intersection - sphereCenter); //finding the normal
        
     }
     if (get<0>(stuff) == "Triangle") {
@@ -347,21 +302,11 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
         diff = static_cast<Triangle*>(get<1>(stuff))->diffu;
         specular = static_cast<Triangle*>(get<1>(stuff))->specul;
         shiny = static_cast<Triangle*>(get<1>(stuff))->shini;
-        //vec3 A = static_cast<Triangle*>(get<1>(stuff))->Ap; //getting the world coord center of the sphere    
-       // vec3 B = static_cast<Triangle*>(get<1>(stuff))->Bp; //getting the world coord center of the sphere    
-       // vec3 C = static_cast<Triangle*>(get<1>(stuff))->Cp; //getting the world coord center of the sphere    
-        float offset = 0.01;
-       // mat3 matrix = mat3(inverse(static_cast<Triangle*>(get<1>(stuff))->trans));
-      //  A = matrix * A;
-      //  B = matrix * B;
-      //  C = matrix * C;
-        normal = static_cast<Triangle*>(get<1>(stuff))->inverseNormal;
-        //normal = glm::normalize(cross(normalize(C - A), normalize(B - A)));
-       // normal = vec3(transpose(static_cast<Triangle*>(get<1>(stuff))->trans) * vec4(normal, 1));
-        //newIntersection = vec3(static_cast<Triangle*>(get<1>(stuff))->trans * vec4(inter, 1));
-
-       // intersection += (normal * offset);
      
+        float offset = 0.01;
+       
+        normal = static_cast<Triangle*>(get<1>(stuff))->inverseNormal;
+        
 
     }
    
@@ -370,70 +315,7 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
     if (depth == 0) {
         return color; //compute light
     }
-    //The spencer check list
-    //ASK YASH WHY TRIANGLE IS NOT COMPUTING LIGHT??? aND nO SHADOWS test with scene1
-    //ASK YASH WHY OUR SPHERE IS FUCKED UP???? 
-    //Ask about reflections
-    //what does attentutaion do does it make it look better?
-    
-    /*
-    
-    for (int i = 0; i < newScene.numlights; i++) {
-        vec3 lightdir;
-        vec3 lightcol;
-        vec3 half1;
-        if (newScene.lightposn[(i * 4)+3] == 0) { //directional
-            vec3 lightposition = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
-            lightdir = normalize(lightposition); //as specified by the directional light
-            half1 = normalize(lightdir + eyedirn);
-            lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
-            
-        }
-        else {
-            vec3 lightpos = vec3(newScene.lightposn[(i * 4)], newScene.lightposn[(i * 4) + 1], newScene.lightposn[(i * 4) + 2]);
-            
-            //use old intersectino if this fuck
-            lightdir = normalize(lightpos - inter); //find the light direction 
-            inter += (.01f * lightdir);
-          
-            lightcol = vec3(newScene.lightcol[(i * 3)], newScene.lightcol[(i * 3) + 1], newScene.lightcol[(i * 3) + 2]);
-            half1 = normalize(lightdir + eyedirn); //finding the half vector 
-        }
-      
-       // vec3 direction = glm::normalize(position - input);
-       
-       // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
-        //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
-        ray r(inter, lightdir); //cast a ray from the point of intersection, in the light direction
-
-
-        //ray intersection is transformed in sphere
-        //by transform matrix 
-
-        //ray intersection is also tranformed in triangle
-        //by transformation matrix
-
-
-        //possiblities the problem is we are getting to much shadow
-        //visibibly is always returning 0
-        //as is our intersection methods
-        // SHADOWS ARE NOT CORRECT
-        //could be the ray we pass into intersection, could be the intersection method handling the ray
-        //debug both
-
-
-        if (visibility(r, newScene, get<3>(stuff)) == 1) {
-
-            color += ComputeLight(lightdir, lightcol, normal, half1, diff, specular, shiny);
-        }
-        
-       
-      
-
-    }
-
-
-    */
+   
 
     for (int i = 0; i < newScene.numlights; i++) {
         vec3 lightdir;
@@ -459,18 +341,10 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
             half1 = normalize(lightdir + eyedirn); //finding the half vector 
         }
 
-        // vec3 direction = glm::normalize(position - input);
-
-        // Ray r = Ray(intersection + (float)0.3 * lightdir, direction);
-         //ray r(intersection, lightdir); //cast a ray from the point of intersection, in the light direction
+       
         ray r(inter, lightdir); //cast a ray from the point of intersection, in the light direction
 
-        //possiblities the problem is we are getting to much shadow
-        //visibibly is always returning 0
-        //as is our intersection methods
-        // SHADOWS ARE NOT CORRECT
-        //could be the ray we pass into intersection, could be the intersection method handling the ray
-        //debug both
+       
 
 
         if (visibility(r, newScene, get<3>(stuff)) == 1) {
@@ -483,7 +357,9 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
 
     }
      color += ambient + emiss;
-     /*
+
+
+     /* This was for reflections
      vec3 directional = -eyedirn + 2.0f * dot(eyedirn, normal) * normal;
      ray reflec(newIntersection + (normal * 0.01f), glm::normalize(directional));
      tuple<string, Scene*, vec3, int> e = intersection(reflec, newScene);
@@ -493,11 +369,6 @@ vec3 pixcolor(tuple<string, Scene*, vec3, int> stuff, int depth, Scene newScene,
      }
      */
      
-    //looping through the lights
- 
-    
-    
-    
 
     return color;
 }
@@ -540,10 +411,10 @@ int main(int argc, char* argv[]) {
     int index = 0;
     vec3 pixel_color = vec3(0, 0, 0);
     int pixcount = 0;
-    for (float i = 0; i < image_height; ++i) {
+    for (float i = 0.5; i < image_height; ++i) {
        
-        for (float j = 0; j < image_width; ++j) {
-
+        for (float j = 0.5; j < image_width; ++j) {
+           
             //dir = aU + bV - W
             float alpha = fovx * ((j - (float(image_width) / 2.0)) / (float(image_width) / 2.0));
             float beta = newFovy * (((float(image_height) / 2.0) - i) / (float(image_height) / 2.0));
@@ -570,7 +441,7 @@ int main(int argc, char* argv[]) {
 
 
             pixel_color = vec3(int(clamp(pixel_color[0], 1) * 255), int(clamp(pixel_color[1], 1) * 255), int(clamp(pixel_color[2], 1) * 255));
-            //depending on the intersection compute the color 
+           
             int d = pixel_color[0];
 
             write_color(index, pixels, pixel_color);
